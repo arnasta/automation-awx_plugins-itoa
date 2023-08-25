@@ -1,0 +1,11 @@
+---
+namespace: cencora
+name: itoa
+version: 1.0.0
+readme: README.md
+authors:
+- arnas.tamulionis@amerisourcebergen.com
+description: Cencora ansible collection
+tags: []
+dependencies: {}
+repository: https://github.com/abcorp-itops/automation-awx_plugins-itoa
