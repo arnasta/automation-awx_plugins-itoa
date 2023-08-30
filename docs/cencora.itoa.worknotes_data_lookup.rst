@@ -87,7 +87,7 @@ Notes
    - This module is part of the cencora.itoa collection (version 1.0.0).
    - To install it, use ``ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git``.
 
-You'll also want to create collections/requirements.yml in your AWX playbook that contains this content
+You'll also want to create ``collections/requirements.yml`` in your AWX playbook that contains this content
 
 .. code-block:: yaml
 

@@ -187,10 +187,9 @@ Notes
    - In AWX, create custom credential of type BeyondTrust and provide username, password and api key. Note the name of the BeyondTrust folder your credentials are stored in.
    - Add the custom credential from step 2 to playbook execution template.
    - Add playbook that uses collection lookup vars according to your needs, see below.
-   - You'll also want to create ``collections/requirements.yml`` in your AWX playbook that contains this content
    - To install it, use ``ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-beyond_trust``.
 
-You'll also want to create collections/requirements.yml in your AWX playbook that contains this content
+You'll also want to create ``collections/requirements.yml`` in your AWX playbook that contains this content
 
 .. code-block:: yaml
 
