@@ -1,6 +1,6 @@
 # automation-awx_plugins-itoa
 
-*Collection version 1.0.0*
+*Collection version 1.1.0*
 
 ## Description
 
@@ -21,3 +21,5 @@ These are the plugins in the cencora.itoa collection:
 - [timedelta](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.timedelta_lookup.rst) – Get data with timedelta
 
 - [worknotes](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.worknotes_data_lookup.rst) – Get data from ServiceNow work note that includes yaml data
+
+- [secrets_safe](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/encora.itoa.secrets_safe_lookup.rst) – Get secrets from BeyondTrust Secrets safe

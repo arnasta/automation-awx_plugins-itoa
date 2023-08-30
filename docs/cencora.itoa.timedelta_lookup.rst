@@ -118,7 +118,7 @@ You'll also want to create collections/requirements.yml in your AWX playbook tha
       - name: cencora.itoa
         type: git
         source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-        version: 1.0.0
+        version: 1.1.0
 
 
 Examples
