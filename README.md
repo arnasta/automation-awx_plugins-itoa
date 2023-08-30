@@ -22,4 +22,4 @@ These are the plugins in the cencora.itoa collection:
 
 - [worknotes](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.worknotes_data_lookup.rst) – Get data from ServiceNow work note that includes yaml data
 
-- [secrets_safe](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/encora.itoa.secrets_safe_lookup.rst) – Get secrets from BeyondTrust Secrets safe
+- [secrets_safe](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.secrets_safe_lookup.rst) – Get secrets from BeyondTrust Secrets safe
