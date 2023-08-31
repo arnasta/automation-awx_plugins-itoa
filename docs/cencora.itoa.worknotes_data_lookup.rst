@@ -76,6 +76,28 @@ Parameters
                         <div>it is a flag to return only latest data or all data</div>
                 </td>
             </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>user</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">""</div>
+                </td>
+                    <td>
+                            <div> ini entries:
+                                    <p>[worknotes_data]<br>latest = </p>
+                            </div>
+                    </td>
+                <td>
+                        <div>user who&#x27;s work notes are read</div>
+                        <div>if it is not specified work notes from all users will be processed</div>
+                </td>
+            </tr>
     </table>
     <br/>
 
@@ -84,8 +106,9 @@ Notes
 -----
 
 .. note::
-   - This module is part of the cencora.itoa collection (version 1.0.0).
+   - This module is part of the cencora.itoa collection (version 1.1.1).
    - To install it, use ``ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git``.
+
 
 You'll also want to create ``collections/requirements.yml`` in your AWX playbook that contains this content
 
@@ -96,7 +119,8 @@ You'll also want to create ``collections/requirements.yml`` in your AWX playbook
       - name: cencora.itoa
         type: git
         source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-        version: 1.1.0
+        version: 1.1.1
+
 
 
 Examples
@@ -118,7 +142,7 @@ Examples
             - fadc-eif01.myabcit.net\n            object:\n           
             - etsse1i1s001\n            zone:\\n           
             - PROD_SHARED_SERVICES\n    name: Data\n...\n\n"
-        data: "{{ lookup('cencora.itoa.worknotes_data', work_notes, latest=false) }}"
+        data: "{{ lookup('cencora.itoa.worknotes_data', work_notes, latest=false, user='ITOA Automation') }}"
       tasks:
         - debug:
             msg: "{{ data }}"
