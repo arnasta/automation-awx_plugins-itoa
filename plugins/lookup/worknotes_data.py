@@ -10,7 +10,7 @@ DOCUMENTATION = r"""
   description:
       - This lookup returns a data object or list of data objects from ServiceNow ticket work notes
   notes:
-      - This module is part of the cencora.itoa collection (version 1.0.0).
+      - This module is part of the cencora.itoa collection (version 1.1.1).
       - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git).
       - You'll also want to create C(collections/requirements.yml) in your AWX playbook that 
         contains this content
@@ -18,6 +18,15 @@ DOCUMENTATION = r"""
     _terms:
       description: work_notes string
       required: True
+    user:
+      description:
+        - user who's work notes are read
+        - if it is not specified work notes from all users will be processed
+      default: ''
+      type: string
+      ini:
+        - section: worknotes_data
+          key: latest
     latest:
       description:
         - it is a flag to return only latest data or all data
@@ -34,7 +43,7 @@ collections:
   - name: cencora.itoa
     type: git
     source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-    version: 1.1.0
+    version: 1.1.1
 ---
 - hosts: localhost
   connection: local
@@ -49,7 +58,7 @@ collections:
         - fadc-eif01.myabcit.net\n            object:\n           
         - etsse1i1s001\n            zone:\\n           
         - PROD_SHARED_SERVICES\n    name: Data\n...\n\n"
-    data: "{{ lookup('cencora.itoa.worknotes_data', work_notes, latest=false) }}"
+    data: "{{ lookup('cencora.itoa.worknotes_data', work_notes, latest=false, user='ITOA Automation') }}"
   tasks:
     - debug:
         msg: "{{ data }}"
@@ -107,6 +116,7 @@ class LookupModule(LookupBase):
 
         self.set_options(var_options=variables, direct=kwargs)
         latest = self.get_option('latest')
+        user = self.get_option('latest')
         ret = []
         for term in terms:
             display.debug("worknotes_data lookup term: %s" % term)
@@ -131,6 +141,8 @@ class LookupModule(LookupBase):
                             worknote_data = yaml.safe_load(block.split('...')[0])
                         except:
                             display.debug(f"Cannot load yaml from {block.split('...')[0]}")
+                            continue
+                        if user and worknote_user != user:
                             continue
                         yaml_dict = dict()
                         yaml_dict['worknote_date'] = worknote_date

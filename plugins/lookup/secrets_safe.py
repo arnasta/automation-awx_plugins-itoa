@@ -17,6 +17,7 @@ short_description: This collection creates a lookup plugin for BeyondTrust teams
 description:
   - This lookup plugin can be used to fetch credentials, text strings and files from BeyondTrust.
 notes:
+  - This module is part of the cencora.itoa collection (version 1.1.1).
   - To set up with AWX execution.
   - Order Teams password safe and make sure access is provisioned for service account.
     You'll need an Active Directory service account. Once you have that, send an email
@@ -30,7 +31,7 @@ notes:
   - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-beyond_trust).
   - You'll also want to create C(collections/requirements.yml) in your AWX playbook that 
     contains this content
-version_added: 0.2
+version_added: 1.1.0
 options:
   _terms:
       description:
@@ -100,7 +101,7 @@ collections:
   - name: cencora.itoa
     type: git
     source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-    version: 1.1.0
+    version: 1.1.1
 ---
 - name: Retrieve credentials from bt prod instance
   hosts: 127.0.0.1
