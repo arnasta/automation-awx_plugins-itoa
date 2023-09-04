@@ -95,7 +95,29 @@ Parameters
                     </td>
                 <td>
                         <div>Date format e.g. &#x27;%m-%d-%Y %H:%M:%S&#x27;</div>
-                        <div>Default data forma is &#x27;%Y-%m-%dT%H:%M:%S.%f%z&#x27;</div>
+                        <div>Default data format is &#x27;%Y-%m-%dT%H:%M:%S.%f%z&#x27;</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>out_format</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">""</div>
+                </td>
+                    <td>
+                            <div> ini entries:
+                                    <p>[timedelta_lookup]<br>out_format = </p>
+                            </div>
+                    </td>
+                <td>
+                        <div>Date format e.g. &#x27;%m-%d-%Y %H:%M:%S&#x27;</div>
+                        <div>format is used for output format if this is not defined</div>
                 </td>
             </tr>
     </table>
@@ -106,7 +128,7 @@ Notes
 -----
 
 .. note::
-   - This module is part of the cencora.itoa collection (version 1.1.1).
+   - This module is part of the cencora.itoa collection (version 1.1.2).
    - To install it, use ``ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git``.
 
 
@@ -119,7 +141,7 @@ You'll also want to create ``collections/requirements.yml`` in your AWX playbook
       - name: cencora.itoa
         type: git
         source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-        version: 1.1.1
+        version: 1.1.2
 
 
 

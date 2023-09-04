@@ -10,7 +10,7 @@ DOCUMENTATION = r"""
   description:
       - This lookup returns a datetime string after adding or subtracting timedelta.
   notes:
-      - This module is part of the cencora.itoa collection (version 1.1.1).
+      - This module is part of the cencora.itoa collection (version 1.1.2).
       - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git).
       - You'll also want to create C(collections/requirements.yml) in your AWX playbook that 
         contains this content
@@ -21,12 +21,21 @@ DOCUMENTATION = r"""
     format:
       description:
         - Date format e.g. '%m-%d-%Y %H:%M:%S'
-        - Default data forma is '%Y-%m-%dT%H:%M:%S.%f%z'
+        - Default data format is '%Y-%m-%dT%H:%M:%S.%f%z'
       default: '%Y-%m-%dT%H:%M:%S.%f%z'
       type: string
       ini:
         - section: timedelta_lookup
           key: format
+    out_format:
+      description:
+        - Date format e.g. '%m-%d-%Y %H:%M:%S'
+        - format is used for output format if this is not defined
+      type: string
+      default: ''
+      ini:
+        - section: timedelta_lookup
+          key: out_format
     delta:
       description:
         - Time delta string in form of '-1 day'
@@ -46,7 +55,7 @@ collections:
   - name: cencora.itoa
     type: git
     source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-    version: 1.1.1
+    version: 1.1.2
 ---
 - hosts: localhost
   connection: local
@@ -82,6 +91,7 @@ class LookupModule(LookupBase):
 
         self.set_options(var_options=variables, direct=kwargs)
         format = self.get_option('format')
+        out_format = self.get_option('out_format')
         delta = self.get_option('delta')
         ret = []
         for term in terms:
@@ -138,5 +148,8 @@ class LookupModule(LookupBase):
                     raise AnsibleError(f"Amount should be prepended with sign '+' or '-', not '{sign}'")
             else:
                 raise AnsibleError(f"Input should be a string not '{type(term)}'")
-            ret.append(output_date.strftime(format))
+            if out_format:
+                ret.append(output_date.strftime(out_format))
+            else:
+                ret.append(output_date.strftime(format))
         return ret
