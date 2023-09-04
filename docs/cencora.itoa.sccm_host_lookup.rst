@@ -1,14 +1,14 @@
-.. _cencora.itoa.worknotes_data_lookup:
+.. _cencora.itoa.sccm_host_lookup:
 
 
-***************************
-cencora.itoa.worknotes_data
-***************************
+**********************
+cencora.itoa.sccm_host
+**********************
 
-**extracts data from SeriveNow notes**
+**This plugin gets host info from sccm**
 
 
-Version added: 0.1
+Version added: 1.1.3
 
 .. contents::
    :local:
@@ -17,9 +17,16 @@ Version added: 0.1
 
 Synopsis
 --------
-- This lookup returns a data object or list of data objects from ServiceNow ticket work notes
+- This lookup returns a datetime string after adding or subtracting timedelta.
 
 
+
+Requirements
+------------
+The below requirements are needed on the local Ansible controller node that executes this lookup.
+
+- python requests
+- python requests_ntlm
 
 
 Parameters
@@ -49,53 +56,88 @@ Parameters
                     <td>
                     </td>
                 <td>
-                        <div>work_notes string</div>
+                        <div>Input date string</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>latest</b>
+                    <b>fields</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
+                        <span style="color: purple">list</span>
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
-                        </ul>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[worknotes_data]<br>latest = yes</p>
+                                    <p>[sccm_host_lookup]<br>fields = VALUE</p>
                             </div>
                     </td>
                 <td>
-                        <div>it is a flag to return only latest data or all data</div>
+                        <div>Fields from SCCM to fetch</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>user</b>
+                    <b>password</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                                <div>env:SCCM_PASSWORD</div>
+                    </td>
+                <td>
+                        <div>Password for username.</div>
+                        <div>If the value is not specified, the value of environment variable <code>SCCM_PASSWORD</code> will be used instead.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>server</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">""</div>
+                        <b>Default:</b><br/><div style="color: blue">"svrsccm1p001.abc.amerisourcebergen.com"</div>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[worknotes_data]<br>latest = </p>
+                                    <p>[sccm_host_lookup]<br>server = svrsccm1p001.abc.amerisourcebergen.com</p>
                             </div>
                     </td>
                 <td>
-                        <div>user who&#x27;s work notes are read</div>
-                        <div>if it is not specified work notes from all users will be processed</div>
+                        <div>SCCM server address</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>username</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                                <div>env:SCCM_USERNAME</div>
+                    </td>
+                <td>
+                        <div>Name of user for connection to SCCM.</div>
+                        <div>If the value is not specified, the value of environment variable <code>SCCM_USERNAME</code> will be used instead.</div>
                 </td>
             </tr>
     </table>
@@ -109,7 +151,7 @@ Notes
    - This module is part of the cencora.itoa collection (version 1.1.3).
    - To install it, use ``ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git``.
 
-  
+
 You'll also want to create ``collections/requirements.yml`` in your AWX playbook that contains this content
 
 .. code-block:: yaml
@@ -129,23 +171,21 @@ Examples
 .. code-block:: yaml
 
     ---
-    - hosts: localhost
-      connection: local
-      gather_facts: true
+    - name: Get host info from SCCM
+      hosts: 127.0.0.1
+      gather_facts: false
+      become: false
       collections:
         - cencora.itoa
       vars:
-        work_notes: "08-25-2023 05:57:37 - ITOA Automation (Work notes)\n---
-            # yaml start\\n-  
-            data:\n        ip:\n        - 10.123.45.67\n       
-            - 10.234.56.78\n        palo:\n            fw:\n           
-            - fadc-eif01.myabcit.net\n            object:\n           
-            - etsse1i1s001\n            zone:\\n           
-            - PROD_SHARED_SERVICES\n    name: Data\n...\n\n"
-        data: "{{ lookup('cencora.itoa.worknotes_data', work_notes, latest=false, user='ITOA Automation') }}"
+        server_name: 'test01.abc.amerisourcebergen.com'
+        username: 'a132171'
+        password: 'mypass'
+        host_info: "{{ lookup('cencora.itoa.sccm_host', 'test01.abc.amerisourcebergen.com', username='a132171', password='mypass') }}"
       tasks:
         - debug:
-            msg: "{{ data }}"
+            msg:
+              - "{{server_name}}: {{ lookup('cencora.itoa.sccm_host', 'test01.abc.amerisourcebergen.com', username='a132171', password='mypass') }}"
 
 
 
@@ -164,52 +204,69 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>data</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                    </div>
-                </td>
-                <td>always</td>
-                <td>
-                            <div>yaml data in the work note</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;data&#x27;: {&#x27;ip&#x27;: [&#x27;10.123.45.67&#x27;, &#x27;10.234.56.78&#x27;], &#x27;palo&#x27;: {&#x27;fw&#x27;: [&#x27;fadc-eif01.myabcit.net&#x27;], &#x27;object&#x27;: [&#x27;etsse1i1s001&#x27;], &#x27;zone&#x27;: [&#x27;PROD_SHARED_SERVICES&#x27;]}}, &#x27;name&#x27;: &#x27;Data&#x27;}]</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>worknote_date</b>
+                    <b>Domain</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>always</td>
+                <td>when supported</td>
                 <td>
-                            <div>Date of work note</div>
+                            <div>Domain name</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">08-25-2023 05:57:37</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">CFD</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>worknote_user</b>
+                    <b>IsVirtualMachine</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>when supported</td>
+                <td>
+                            <div>Virtual machine flag</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">True</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>MachineId</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>when supported</td>
+                <td>
+                            <div>MachineId</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">16777222</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>Name</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>always</td>
+                <td>when supported</td>
                 <td>
-                            <div>User who posted the work note</div>
+                            <div>hostname</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">ITOA Automation</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">SVRSCM2P002</div>
                 </td>
             </tr>
     </table>

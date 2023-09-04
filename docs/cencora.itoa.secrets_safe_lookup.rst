@@ -182,7 +182,7 @@ Notes
 -----
 
 .. note::
-   - This module is part of the cencora.itoa collection (version 1.1.2).
+   - This module is part of the cencora.itoa collection (version 1.1.3).
    - To set up with AWX execution.
    - Order Teams password safe and make sure access is provisioned for service account. You'll need an Active Directory service account. Once you have that, send an email (template to be determined) to PrivilegedAccessManagement@amerisourcebergen.com so they can provision access to your BT safe. Be sure to note your service account should not have multifactor authentication enabled for this.
    - In AWX, create custom credential of type BeyondTrust and provide username, password and api key. Note the name of the BeyondTrust folder your credentials are stored in.
@@ -190,7 +190,7 @@ Notes
    - Add playbook that uses collection lookup vars according to your needs, see below.
    - To install it, use ``ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-beyond_trust``.
 
-
+  
 You'll also want to create ``collections/requirements.yml`` in your AWX playbook that contains this content
 
 .. code-block:: yaml
@@ -200,7 +200,7 @@ You'll also want to create ``collections/requirements.yml`` in your AWX playbook
       - name: cencora.itoa
         type: git
         source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-        version: 1.1.2
+        version: 1.1.3
 
 
 
