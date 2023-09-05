@@ -180,7 +180,7 @@ class LookupModule(LookupBase):
             c.search(search_base = group_base_dn, search_filter = f'(&(objectClass=group)(cn=*{utils.conv.escape_filter_chars(term)}*))', attributes = attributes)
             for entry in c.response:
                 if entry['type'] != 'searchResRef':
-                    group_info.append(entry)
+                    group_info.append(entry['attributes'])
             if group_info:
                 display.vvv(f"Found group(s): {group_info}")
             if computer_info and group_info:
