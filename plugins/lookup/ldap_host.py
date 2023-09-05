@@ -156,33 +156,33 @@ from ldap3 import Server, Connection, SAFE_SYNC, ALL, NTLM, utils
 display = Display()
 
 class LookupModule(LookupBase):
-  def run(self, terms, variables=None, **kwargs):
-    self.set_options(var_options=variables, direct=kwargs)
-    server = self.get_option('server')
-    server_base_dn = self.get_option('server_base_dn')
-    group_base_dn = self.get_option('group_base_dn')
-    username = self.get_option('username')
-    password = self.get_option('password')
-    attributes = self.get_option('attributes')
-    ldapServer = Server(self.get_option('server'), get_info=ALL)
-    self.display.vvv(f"Connecting to LDAP server: {server} ...")
-    c = Connection(ldapServer, user=username, password=password, authentication=NTLM, auto_bind=True)
-    ret = []
-    for term in terms:
-      computer_info = dict()
-      group_info = list()
-      c.search(search_base = server_base_dn, search_filter = f'(&(objectClass=computer)(name={utils.conv.escape_filter_chars(term)}))', attributes = attributes)
-      if len(c.response) > 0:
-        computer_info = c.response[0]
-      c.search(search_base = group_base_dn, search_filter = f'(&(objectClass=group)(cn=*{utils.conv.escape_filter_chars(term)}*))', attributes = attributes)
-      if len(c.response) > 0:
-        group_info = c.response
-      if computer_info and group_info:
-        ret.append({'computer_info': computer_info, 'group_info': group_info})
-      elif computer_info:
-        ret.append({'computer_info': computer_info})
-      elif group_info:
-        ret.append({'group_info': group_info})
-      else:
-        ret.append({})
-    return ret  
+    def run(self, terms, variables=None, **kwargs):
+        self.set_options(var_options=variables, direct=kwargs)
+        server = self.get_option('server')
+        server_base_dn = self.get_option('server_base_dn')
+        group_base_dn = self.get_option('group_base_dn')
+        username = self.get_option('username')
+        password = self.get_option('password')
+        attributes = self.get_option('attributes')
+        ldapServer = Server(self.get_option('server'), get_info=ALL)
+        self.display.vvv(f"Connecting to LDAP server: {server} ...")
+        c = Connection(ldapServer, user=username, password=password, authentication=NTLM, auto_bind=True)
+        ret = []
+        for term in terms:
+            computer_info = dict()
+            group_info = list()
+            c.search(search_base = server_base_dn, search_filter = f'(&(objectClass=computer)(name={utils.conv.escape_filter_chars(term)}))', attributes = attributes)
+            if len(c.response) > 0:
+                computer_info = c.response[0]
+            c.search(search_base = group_base_dn, search_filter = f'(&(objectClass=group)(cn=*{utils.conv.escape_filter_chars(term)}*))', attributes = attributes)
+            if len(c.response) > 0:
+                group_info = c.response
+            if computer_info and group_info:
+                ret.append({'computer_info': computer_info, 'group_info': group_info})
+            elif computer_info:
+                ret.append({'computer_info': computer_info})
+            elif group_info:
+                ret.append({'group_info': group_info})
+            else:
+                ret.append({})
+        return ret    
