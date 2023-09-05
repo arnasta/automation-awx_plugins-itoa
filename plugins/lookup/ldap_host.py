@@ -152,6 +152,7 @@ from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 from ldap3 import Server, Connection, SAFE_SYNC, ALL, NTLM, utils
+import datetime
 
 display = Display()
 
@@ -170,19 +171,35 @@ class LookupModule(LookupBase):
         ret = []
         for term in terms:
             computer_info = dict()
+            ldap_group_info = list()
             group_info = list()
             display.vvv(f"Searching (&(objectClass=computer)(name={utils.conv.escape_filter_chars(term)}))")
             c.search(search_base = server_base_dn, search_filter = f'(&(objectClass=computer)(name={utils.conv.escape_filter_chars(term)}))', attributes = attributes)
             if len(c.response) > 0:
                 display.vvv(f"Found server: {c.response[0]}")
-                computer_info = c.response[0]['attributes']
+                computer_attributes = c.response[0]['attributes']
+                for attribute in computer_attributes:
+                    if computer_attributes[attribute]:
+                        if isinstance(computer_attributes[attribute], datetime.datetime):
+                            computer_info[attribute] = str(computer_attributes[attribute])
+                        else:
+                            computer_info[attribute] = computer_attributes[attribute]
             display.vvv(f"Searching (&(objectClass=group)(cn=*{utils.conv.escape_filter_chars(term)}*))")
             c.search(search_base = group_base_dn, search_filter = f'(&(objectClass=group)(cn=*{utils.conv.escape_filter_chars(term)}*))', attributes = attributes)
             for entry in c.response:
                 if entry['type'] != 'searchResRef':
-                    group_info.append(entry['attributes'])
-            if group_info:
+                    ldap_group_info.append(entry['attributes'])
+            if ldap_group_info:
                 display.vvv(f"Found group(s): {group_info}")
+                for group_attributes in ldap_group_info:
+                    group_dict = dict()
+                    for attribute in group_attributes:
+                        if group_attributes[attribute]:
+                            if isinstance(group_attributes[attribute], datetime.datetime):
+                                group_dict[attribute] = str(group_attributes[attribute])
+                            else:
+                                group_dict[attribute] = group_attributes[attribute]
+                    computer_info.append(group_dict)
             if computer_info and group_info:
                 ret.append({'computer_info': computer_info, 'group_info': group_info})
             elif computer_info:
