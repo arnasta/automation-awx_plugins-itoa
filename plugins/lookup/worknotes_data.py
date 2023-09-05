@@ -5,12 +5,12 @@ __metaclass__ = type
 DOCUMENTATION = r"""
   name: worknotes_data
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
-  version_added: "0.1"
+  version_added: 1.0.0
   short_description: extracts data from SeriveNow notes
   description:
       - This lookup returns a data object or list of data objects from ServiceNow ticket work notes
   notes:
-      - This module is part of the cencora.itoa collection (version 1.1.3).
+      - This module is part of the cencora.itoa collection (version 1.1.4).
       - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git).
       - You'll also want to create C(collections/requirements.yml) in your AWX playbook that 
         contains this content
@@ -43,7 +43,7 @@ collections:
   - name: cencora.itoa
     type: git
     source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-    version: 1.1.3
+    version: 1.1.4
 ---
 - hosts: localhost
   connection: local

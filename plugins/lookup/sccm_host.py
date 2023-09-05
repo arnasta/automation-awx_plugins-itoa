@@ -11,15 +11,15 @@ DOCUMENTATION = r'''
       - python requests_ntlm
   version_added: 1.1.3
   description:
-      - This lookup returns a datetime string after adding or subtracting timedelta.
+      - This lookup returns host information from SCCM server
   notes:
-      - This module is part of the cencora.itoa collection (version 1.1.3).
+      - This module is part of the cencora.itoa collection (version 1.1.4).
       - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git).
       - You'll also want to create C(collections/requirements.yml) in your AWX playbook that 
         contains this content
   options:
       _terms:
-          description: Input date string
+          description: server hostname
           required: True
       server:
           description: SCCM server address
@@ -58,7 +58,7 @@ collections:
   - name: cencora.itoa
     type: git
     source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-    version: 1.1.3
+    version: 1.1.4
 ---
 - name: Get host info from SCCM
   hosts: 127.0.0.1
@@ -70,11 +70,11 @@ collections:
     server_name: 'test01.abc.amerisourcebergen.com'
     username: 'a132171'
     password: 'mypass'
-    host_info: "{{ lookup('cencora.itoa.sccm_host', 'test01.abc.amerisourcebergen.com', username='a132171', password='mypass') }}"
+    host_info: "{{ lookup('cencora.itoa.sccm_host', server_name, username=username, password=password) }}"
   tasks:
     - debug:
         msg:
-          - "{{server_name}}: {{ lookup('cencora.itoa.sccm_host', 'test01.abc.amerisourcebergen.com', username='a132171', password='mypass') }}"
+          - "{{server_name}}: {{ host_info }}"
 """
 
 RETURN = r"""
