@@ -29,14 +29,14 @@ DOCUMENTATION = r'''
                 key: server
       server_base_dn:
           description: base dn for servers
-          default: 'OU=ABCServers,DC=abc,DC=amerisourcebergen,DC=com'
+          default: ''
           type: string
           ini:
               - section: ldap_host_lookup
                 key: server_base_dn
       group_base_dn:
           description: base dn for groups
-          default: 'DC=abc,DC=amerisourcebergen,DC=com'
+          default: ''
           type: string
           ini:
               - section: ldap_host_lookup
@@ -161,7 +161,11 @@ class LookupModule(LookupBase):
         self.set_options(var_options=variables, direct=kwargs)
         server = self.get_option('server')
         server_base_dn = self.get_option('server_base_dn')
+        if not server_base_dn:
+            server_base_dn = 'DC=' + 'DC='.join(server.split('.')[1:])
         group_base_dn = self.get_option('group_base_dn')
+        if not group_base_dn:
+            group_base_dn = 'DC=' + 'DC='.join(server.split('.')[1:])
         username = self.get_option('username')
         password = self.get_option('password')
         attributes = self.get_option('attributes')
