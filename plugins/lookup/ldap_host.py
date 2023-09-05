@@ -162,10 +162,10 @@ class LookupModule(LookupBase):
         server = self.get_option('server')
         server_base_dn = self.get_option('server_base_dn')
         if not server_base_dn:
-            server_base_dn = 'DC=' + 'DC='.join(server.split('.')[1:])
+            server_base_dn = 'DC=' + ',DC='.join(server.split('.')[1:])
         group_base_dn = self.get_option('group_base_dn')
         if not group_base_dn:
-            group_base_dn = 'DC=' + 'DC='.join(server.split('.')[1:])
+            group_base_dn = 'DC=' + ',DC='.join(server.split('.')[1:])
         username = self.get_option('username')
         password = self.get_option('password')
         attributes = self.get_option('attributes')
