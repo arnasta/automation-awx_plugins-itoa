@@ -169,9 +169,20 @@ class LookupModule(LookupBase):
         c = Connection(ldapServer, user=username, password=password, authentication=NTLM, auto_bind=True)
         ret = []
         for term in terms:
+            computer_info = dict()
+            group_info = list()
             c.search(search_base = server_base_dn, search_filter = f'(&(objectClass=computer)(name={utils.conv.escape_filter_chars(term)}))', attributes = attributes)
-            computer_info = c.response[0]
+            if len(c.response) > 0:
+              computer_info = c.response[0]
             c.search(search_base = group_base_dn, search_filter = f'(&(objectClass=group)(cn=*{utils.conv.escape_filter_chars(term)}*))', attributes = attributes)
-            group_info = c.response
-            ret.append({'computer_info': computer_info, 'group_info': group_info})
+            if len(c.response) > 0:
+              group_info = c.response
+            if computer_info and group_info:
+              ret.append({'computer_info': computer_info, 'group_info': group_info})
+            elif computer_info:
+              ret.append({'computer_info': computer_info})
+            elif group_info:
+              ret.append({'group_info': group_info})
+            else:
+              ret.append({})
         return ret
