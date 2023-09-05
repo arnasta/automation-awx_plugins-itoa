@@ -199,7 +199,7 @@ class LookupModule(LookupBase):
                                 group_dict[attribute] = str(group_attributes[attribute])
                             else:
                                 group_dict[attribute] = group_attributes[attribute]
-                    computer_info.append(group_dict)
+                    group_info.append(group_dict)
             if computer_info and group_info:
                 ret.append({'computer_info': computer_info, 'group_info': group_info})
             elif computer_info:
