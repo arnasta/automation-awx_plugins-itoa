@@ -165,7 +165,7 @@ class LookupModule(LookupBase):
         password = self.get_option('password')
         attributes = self.get_option('attributes')
         ldapServer = Server(self.get_option('server'), get_info=ALL)
-        self.display.vvv(f"Connecting to LDAP server: {server} ...")
+        display.vvv(f"Connecting to LDAP server: {server} ...")
         c = Connection(ldapServer, user=username, password=password, authentication=NTLM, auto_bind=True)
         ret = []
         for term in terms:
@@ -173,9 +173,11 @@ class LookupModule(LookupBase):
             group_info = list()
             c.search(search_base = server_base_dn, search_filter = f'(&(objectClass=computer)(name={utils.conv.escape_filter_chars(term)}))', attributes = attributes)
             if len(c.response) > 0:
+                display.vvv(f"Found server: {c.response[0]}")
                 computer_info = c.response[0]
             c.search(search_base = group_base_dn, search_filter = f'(&(objectClass=group)(cn=*{utils.conv.escape_filter_chars(term)}*))', attributes = attributes)
             if len(c.response) > 0:
+                display.vvv(f"Found group(s): {c.response}")
                 group_info = c.response
             if computer_info and group_info:
                 ret.append({'computer_info': computer_info, 'group_info': group_info})
