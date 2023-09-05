@@ -175,7 +175,7 @@ class LookupModule(LookupBase):
             c.search(search_base = server_base_dn, search_filter = f'(&(objectClass=computer)(name={utils.conv.escape_filter_chars(term)}))', attributes = attributes)
             if len(c.response) > 0:
                 display.vvv(f"Found server: {c.response[0]}")
-                computer_info = c.response[0]
+                computer_info = c.response[0]['attributes']
             display.vvv(f"Searching (&(objectClass=group)(cn=*{utils.conv.escape_filter_chars(term)}*))")
             c.search(search_base = group_base_dn, search_filter = f'(&(objectClass=group)(cn=*{utils.conv.escape_filter_chars(term)}*))', attributes = attributes)
             for entry in c.response:
