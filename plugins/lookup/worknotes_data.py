@@ -121,8 +121,9 @@ class LookupModule(LookupBase):
         for term in terms:
             display.debug("worknotes_data lookup term: %s" % term)
             if isinstance(term, str):
-                if '--- # yaml start' in term:
-                    blocks = term.split('--- # yaml start')
+                text = term.replace('[code]<pre>','').replace('</pre>[code]','').replace('<br>','\n') # fix for better yaml display in ServiceNow
+                if '--- # yaml start' in text:
+                    blocks = text.split('--- # yaml start')
                     data = list()
                     for index, block in enumerate(blocks):
                         if index == 0:
