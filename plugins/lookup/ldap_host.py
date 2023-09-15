@@ -180,7 +180,7 @@ class LookupModule(LookupBase):
             display.vvv(f"Searching (&(objectClass=computer)(name={utils.conv.escape_filter_chars(term)}))")
             c.search(search_base = server_base_dn, search_filter = f'(&(objectClass=computer)(name={utils.conv.escape_filter_chars(term)}))', attributes = attributes)
             if len(c.response) > 0:
-                if entry['type'] != 'searchResRef':
+                if c.response[0]['type'] != 'searchResRef':
                     display.vvv(f"Found server: {c.response[0]}")
                     computer_attributes = c.response[0]['attributes']
                     for attribute in computer_attributes:
