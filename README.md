@@ -1,6 +1,6 @@
 # automation-awx_plugins-itoa
 
-*Collection version 1.1.4*
+*Collection version 1.1.5*
 
 ## Description
 

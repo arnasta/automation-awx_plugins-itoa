@@ -86,11 +86,11 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">"DC=abc,DC=amerisourcebergen,DC=com"</div>
+                        <b>Default:</b><br/><div style="color: blue">""</div>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[ldap_host_lookup]<br>group_base_dn = DC=abc,DC=amerisourcebergen,DC=com</p>
+                                    <p>[ldap_host_lookup]<br>group_base_dn = </p>
                             </div>
                     </td>
                 <td>
@@ -148,11 +148,11 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">"OU=ABCServers,DC=abc,DC=amerisourcebergen,DC=com"</div>
+                        <b>Default:</b><br/><div style="color: blue">""</div>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[ldap_host_lookup]<br>server_base_dn = OU=ABCServers,DC=abc,DC=amerisourcebergen,DC=com</p>
+                                    <p>[ldap_host_lookup]<br>server_base_dn = </p>
                             </div>
                     </td>
                 <td>
@@ -187,7 +187,7 @@ Notes
 -----
 
 .. note::
-   - This module is part of the cencora.itoa collection (version 1.1.4).
+   - This module is part of the cencora.itoa collection (version 1.1.5).
    - To install it, use ``ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git``.
 
 You'll also want to create ``collections/requirements.yml`` in your AWX playbook that contains this content
@@ -199,7 +199,7 @@ You'll also want to create ``collections/requirements.yml`` in your AWX playbook
       - name: cencora.itoa
         type: git
         source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-        version: 1.1.4
+        version: 1.1.5
 
 
 
