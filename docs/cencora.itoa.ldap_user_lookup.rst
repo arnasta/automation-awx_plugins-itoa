@@ -1,14 +1,14 @@
-.. _cencora.itoa.sccm_host_lookup:
+.. _cencora.itoa.ldap_user_lookup:
 
 
 **********************
-cencora.itoa.sccm_host
+cencora.itoa.ldap_user
 **********************
 
-**This plugin gets host info from sccm**
+**This plugin gets host info from ldap**
 
 
-Version added: 1.1.3
+Version added: 1.1.6
 
 .. contents::
    :local:
@@ -17,7 +17,7 @@ Version added: 1.1.3
 
 Synopsis
 --------
-- This lookup returns host information from SCCM server
+- This lookup returns user info from ldap server
 
 
 
@@ -25,8 +25,7 @@ Requirements
 ------------
 The below requirements are needed on the local Ansible controller node that executes this lookup.
 
-- python requests
-- python requests_ntlm
+- python ldap3
 
 
 Parameters
@@ -62,21 +61,40 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>fields</b>
+                    <b>attributes</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
                     </div>
                 </td>
                 <td>
+                        <b>Default:</b><br/><div style="color: blue">"c,cn,co,company,department,displayName,distinguishedName,employeeNumber,givenName,info,l,lastLogon,mail,manager,mobile,name,physicalDeliveryOfficeName,sAMAccountName,sn,streetAddress,title,userPrincipalName"</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>A list of object attributes to return</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>base_dn</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">""</div>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[sccm_host_lookup]<br>fields = VALUE</p>
+                                    <p>[ldap_host_lookup]<br>server_base_dn = </p>
                             </div>
                     </td>
                 <td>
-                        <div>Fields from SCCM to fetch</div>
+                        <div>base dn for user search</div>
                 </td>
             </tr>
             <tr>
@@ -92,11 +110,11 @@ Parameters
                 <td>
                 </td>
                     <td>
-                                <div>env:SCCM_PASSWORD</div>
+                                <div>env:LDAP_PASSWORD</div>
                     </td>
                 <td>
                         <div>Password for username.</div>
-                        <div>If the value is not specified, the value of environment variable <code>SCCM_PASSWORD</code> will be used instead.</div>
+                        <div>If the value is not specified, the value of environment variable <code>LDAP_PASSWORD</code> will be used instead.</div>
                 </td>
             </tr>
             <tr>
@@ -109,15 +127,15 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">"svrsccm1p001.abc.amerisourcebergen.com"</div>
+                        <b>Default:</b><br/><div style="color: blue">"abcldap.abc.amerisourcebergen.com"</div>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[sccm_host_lookup]<br>server = svrsccm1p001.abc.amerisourcebergen.com</p>
+                                    <p>[ldap_host_lookup]<br>server = abcldap.abc.amerisourcebergen.com</p>
                             </div>
                     </td>
                 <td>
-                        <div>SCCM server address</div>
+                        <div>LDAP server address</div>
                 </td>
             </tr>
             <tr>
@@ -133,11 +151,11 @@ Parameters
                 <td>
                 </td>
                     <td>
-                                <div>env:SCCM_USERNAME</div>
+                                <div>env:LDAP_USERNAME</div>
                     </td>
                 <td>
-                        <div>Name of user for connection to SCCM.</div>
-                        <div>If the value is not specified, the value of environment variable <code>SCCM_USERNAME</code> will be used instead.</div>
+                        <div>Name of user for connection to LDAP.</div>
+                        <div>If the value is not specified, the value of environment variable <code>LDAP_USERNAME</code> will be used instead.</div>
                 </td>
             </tr>
     </table>
@@ -170,21 +188,21 @@ Examples
 .. code-block:: yaml
 
     ---
-    - name: Get host info from SCCM
+    - name: Get user info from LDAP
       hosts: 127.0.0.1
       gather_facts: false
       become: false
       collections:
         - cencora.itoa
       vars:
-        server_name: 'test01.abc.amerisourcebergen.com'
+        user_id: 'a132171'
         username: 'a132171'
         password: 'mypass'
-        host_info: "{{ lookup('cencora.itoa.sccm_host', server_name, username=username, password=password) }}"
+        user_info: "{{ lookup('cencora.itoa.ldap_host', user_id, username=username, password=password) }}"
       tasks:
         - debug:
             msg:
-              - "{{server_name}}: {{ host_info }}"
+              - "{{user_id}}: {{ user_info }}"
 
 
 
@@ -203,69 +221,19 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>Domain</b>
+                    <b>users</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">string</span>
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>
                     </div>
                 </td>
-                <td>when supported</td>
+                <td>always</td>
                 <td>
-                            <div>Domain name</div>
+                            <div>info from group search</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">CFD</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>IsVirtualMachine</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>when supported</td>
-                <td>
-                            <div>Virtual machine flag</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">True</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>MachineId</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td>when supported</td>
-                <td>
-                            <div>MachineId</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">16777222</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>Name</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>when supported</td>
-                <td>
-                            <div>hostname</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">SVRSCM2P002</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;c&#x27;: &#x27;US&#x27;, &#x27;cn&#x27;: &#x27;John, Doe (a123456_tr1)&#x27;, &#x27;co&#x27;: &#x27;United States of America&#x27;, &#x27;company&#x27;: &#x27;AmerisourceBergen Drug Corporation&#x27;, &#x27;department&#x27;: &#x27;Foundation Reliability&#x27;, &#x27;displayName&#x27;: &#x27;a123456_tr1&#x27;, &#x27;distinguishedName&#x27;: &#x27;CN=John\\, Doe (a123456_tr1),OU=Accounts,OU=Tier1,OU=Admin,DC=abc,DC=amerisourcebergen,DC=com&#x27;, &#x27;employeeNumber&#x27;: &#x27;123456&#x27;, &#x27;givenName&#x27;: &#x27;John&#x27;, &#x27;info&#x27;: &#x27;This Account was created by an automated process via MYID&#x27;, &#x27;l&#x27;: &#x27;Middle of Nowhere&#x27;, &#x27;lastLogon&#x27;: &#x27;9/20/2023 10:47:19 AM Eastern Daylight Time&#x27;, &#x27;mail&#x27;: &#x27;a123456_tr1@amerisourcebergen.com&#x27;, &#x27;manager&#x27;: &#x27;CN=Mr.\\, T (a000001),OU=Enterprise,OU=ABCUsers,DC=abc,DC=amerisourcebergen,DC=com&#x27;, &#x27;mobile&#x27;: &#x27;01234567890&#x27;, &#x27;name&#x27;: &#x27;John, Doe (A123456)&#x27;, &#x27;physicalDeliveryOfficeName&#x27;: &#x27;USA Remote - Middle of Nowhere&#x27;, &#x27;sAMAccountName&#x27;: &#x27;a123456&#x27;, &#x27;sn&#x27;: &#x27;Doe&#x27;, &#x27;streetAddress&#x27;: &#x27;Mulholland Drive 42&#x27;, &#x27;title&#x27;: &#x27;IT Operations Automation Developer&#x27;, &#x27;userPrincipalName&#x27;: &#x27;a123456@amerisourcebergen.com&#x27;}]</div>
                 </td>
             </tr>
     </table>
