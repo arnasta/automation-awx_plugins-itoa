@@ -27,3 +27,5 @@ These are the plugins in the cencora.itoa collection:
 - [sccm_host](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.sccm_host_lookup.rst) – Get host info from SCCM
 
 - [ldap_host](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.ldap_host_lookup.rst) – Get host info from LDAP
+
+- [ldap_user](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.ldap_user_lookup.rst) – Get user info from LDAP
