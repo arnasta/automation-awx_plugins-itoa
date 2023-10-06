@@ -1,8 +1,8 @@
-.. _cencora.itoa.date_tz_change_lookup:
+.. _cencora.itoa.date_tz_lookup:
 
 
 ***************************
-cencora.itoa.date_tz_change
+cencora.itoa.date_tz
 ***************************
 
 **This plugin converts date string from one timezone to another**
@@ -66,7 +66,7 @@ Parameters
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[date_tz_change]<br>format = %m-%d-%Y %H:%M:%S</p>
+                                    <p>[date_tz]<br>format = %m-%d-%Y %H:%M:%S</p>
                             </div>
                     </td>
                 <td>
@@ -88,7 +88,7 @@ Parameters
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[date_tz_change]<br>in_tz = VALUE</p>
+                                    <p>[date_tz]<br>in_tz = VALUE</p>
                             </div>
                     </td>
                 <td>
@@ -110,7 +110,7 @@ Parameters
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[date_tz_change]<br>out_format = </p>
+                                    <p>[date_tz]<br>out_format = </p>
                             </div>
                     </td>
                 <td>
@@ -132,7 +132,7 @@ Parameters
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[date_tz_change]<br>out_tz = VALUE</p>
+                                    <p>[date_tz]<br>out_tz = VALUE</p>
                             </div>
                     </td>
                 <td>

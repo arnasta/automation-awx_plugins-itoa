@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-  name: date_tz_change
+  name: date_tz
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
   version_added: 1.1.7
   short_description: This plugin converts date string from one timezone to another
@@ -25,7 +25,7 @@ DOCUMENTATION = r"""
       default: '%m-%d-%Y %H:%M:%S'
       type: string
       ini:
-        - section: date_tz_change
+        - section: date_tz
           key: format
     out_format:
       description:
@@ -34,7 +34,7 @@ DOCUMENTATION = r"""
       type: string
       default: ''
       ini:
-        - section: date_tz_change
+        - section: date_tz
           key: out_format
     in_tz:
       description:
@@ -43,7 +43,7 @@ DOCUMENTATION = r"""
       required: True
       type: string
       ini:
-        - section: date_tz_change
+        - section: date_tz
           key: in_tz
     out_tz:
       description:
@@ -52,7 +52,7 @@ DOCUMENTATION = r"""
       required: True
       type: string
       ini:
-        - section: date_tz_change
+        - section: date_tz
           key: out_tz
 """
 
