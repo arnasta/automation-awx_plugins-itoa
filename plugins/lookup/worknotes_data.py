@@ -35,6 +35,34 @@ DOCUMENTATION = r"""
       ini:
         - section: worknotes_data
           key: latest
+    time_format:
+      description:
+        - time format as a string
+      default: '%m-%d-%Y %H:%M:%S'
+      type: string
+      ini:
+        - section: worknotes_data
+          key: time_format
+    input_timezone:
+      description:
+        - timezone of worknote date
+        - this should correspond to timezone of ServiceNow instance
+        - timezone name as specified in pytz library
+      default: 'EST'
+      type: string
+      ini:
+        - section: worknotes_data
+          key: input_timezone
+    output_timezone:
+      description:
+        - timezone of worknote date in another timezone
+        - this option should be used in you want to get worknote date on another timezone
+        - timezone name as specified in pytz library
+      default: 'EST'
+      type: string
+      ini:
+        - section: worknotes_data
+          key: output_timezone
 """
 
 EXAMPLES = r"""
@@ -58,7 +86,7 @@ collections:
         - fadc-eif01.myabcit.net\n            object:\n           
         - etsse1i1s001\n            zone:\\n           
         - PROD_SHARED_SERVICES\n    name: Data\n...\n\n"
-    data: "{{ lookup('cencora.itoa.worknotes_data', work_notes, latest=false, user='ITOA Automation') }}"
+    data: "{{ lookup('cencora.itoa.worknotes_data', work_notes, latest=false, output_timezone='UTC', user='ITOA Automation') }}"
   tasks:
     - debug:
         msg: "{{ data }}"
@@ -107,6 +135,8 @@ from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 import yaml
+import pytz
+import datetime
 
 display = Display()
 
@@ -117,6 +147,10 @@ class LookupModule(LookupBase):
         self.set_options(var_options=variables, direct=kwargs)
         latest = self.get_option('latest')
         user = self.get_option('user')
+        input_tz = self.get_option('input_timezone')
+        output_tz = self.get_option('output_timezone')
+        if input_tz != output_tz:
+            time_format = self.get_option('time_format')
         ret = []
         for term in terms:
             display.debug("worknotes_data lookup term: %s" % term)
@@ -146,7 +180,14 @@ class LookupModule(LookupBase):
                         if not (user and worknote_user == user):
                             continue
                         yaml_dict = dict()
-                        yaml_dict['worknote_date'] = worknote_date
+                        if input_tz == output_tz:
+                            yaml_dict['worknote_date'] = worknote_date
+                        else:
+                            if not (input_tz in pytz.all_timezones and output_tz in pytz.all_timezones):
+                              raise AnsibleError(f"Timezone string should be one of '{pytz.all_timezones}'")
+                            input_dt = datetime.datetime.strptime(worknote_date, time_format)
+                            dt_with_tz = pytz.timezone(input_tz).localize(input_dt)
+                            yaml_dict['worknote_date'] = dt_with_tz.astimezone(pytz.timezone(output_tz)).strftime(time_format)
                         yaml_dict['worknote_user'] = worknote_user
                         yaml_dict['data'] = worknote_data
                         if latest:
