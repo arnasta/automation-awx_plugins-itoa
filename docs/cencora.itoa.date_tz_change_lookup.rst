@@ -1,14 +1,14 @@
-.. _cencora.itoa.sccm_host_lookup:
+.. _cencora.itoa.date_tz_change_lookup:
 
 
-**********************
-cencora.itoa.sccm_host
-**********************
+***************************
+cencora.itoa.date_tz_change
+***************************
 
-**This plugin gets host info from sccm**
+**This plugin converts date string from one timezone to another**
 
 
-Version added: 1.1.3
+Version added: 1.1.7
 
 .. contents::
    :local:
@@ -17,16 +17,9 @@ Version added: 1.1.3
 
 Synopsis
 --------
-- This lookup returns host information from SCCM server
+- This lookup returns a datetime string after converting it to another timezone.
 
 
-
-Requirements
-------------
-The below requirements are needed on the local Ansible controller node that executes this lookup.
-
-- python requests
-- python requests_ntlm
 
 
 Parameters
@@ -56,33 +49,35 @@ Parameters
                     <td>
                     </td>
                 <td>
-                        <div>server hostname</div>
+                        <div>Input date string</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>fields</b>
+                    <b>format</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">list</span>
+                        <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
+                        <b>Default:</b><br/><div style="color: blue">"%m-%d-%Y %H:%M:%S"</div>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[sccm_host_lookup]<br>fields = VALUE</p>
+                                    <p>[date_tz_change]<br>format = %m-%d-%Y %H:%M:%S</p>
                             </div>
                     </td>
                 <td>
-                        <div>Fields from SCCM to fetch</div>
+                        <div>Date format e.g. &#x27;%m-%d-%Y %H:%M:%S&#x27;</div>
+                        <div>Default data format is &#x27;%m-%d-%Y %H:%M:%S&#x27;</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>password</b>
+                    <b>in_tz</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -92,38 +87,41 @@ Parameters
                 <td>
                 </td>
                     <td>
-                                <div>env:SCCM_PASSWORD</div>
+                            <div> ini entries:
+                                    <p>[date_tz_change]<br>in_tz = VALUE</p>
+                            </div>
                     </td>
                 <td>
-                        <div>Password for username.</div>
-                        <div>If the value is not specified, the value of environment variable <code>SCCM_PASSWORD</code> will be used instead.</div>
+                        <div>timezone of date string</div>
+                        <div>timezone name as specified in pytz library</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>server</b>
+                    <b>out_format</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">"svrsccm1p001.abc.amerisourcebergen.com"</div>
+                        <b>Default:</b><br/><div style="color: blue">""</div>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[sccm_host_lookup]<br>server = svrsccm1p001.abc.amerisourcebergen.com</p>
+                                    <p>[date_tz_change]<br>out_format = </p>
                             </div>
                     </td>
                 <td>
-                        <div>SCCM server address</div>
+                        <div>Date format e.g. &#x27;%m-%d-%Y %H:%M:%S&#x27;</div>
+                        <div>format is used for output format if this is not defined</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>username</b>
+                    <b>out_tz</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -133,11 +131,13 @@ Parameters
                 <td>
                 </td>
                     <td>
-                                <div>env:SCCM_USERNAME</div>
+                            <div> ini entries:
+                                    <p>[date_tz_change]<br>out_tz = VALUE</p>
+                            </div>
                     </td>
                 <td>
-                        <div>Name of user for connection to SCCM.</div>
-                        <div>If the value is not specified, the value of environment variable <code>SCCM_USERNAME</code> will be used instead.</div>
+                        <div>timezone of date string</div>
+                        <div>timezone name as specified in pytz library</div>
                 </td>
             </tr>
     </table>
@@ -170,21 +170,17 @@ Examples
 .. code-block:: yaml
 
     ---
-    - name: Get host info from SCCM
-      hosts: 127.0.0.1
-      gather_facts: false
-      become: false
+    - hosts: localhost
+      connection: local
+      gather_facts: true
       collections:
         - cencora.itoa
       vars:
-        server_name: 'test01.abc.amerisourcebergen.com'
-        username: 'a132171'
-        password: 'mypass'
-        host_info: "{{ lookup('cencora.itoa.sccm_host', server_name, username=username, password=password) }}"
+        input_date: "08-25-2023 05:57:37"
+        utc_date: "{{ lookup('cencora.itoa.date_tz', input_date, in_tz='EST', out_tz='UTC') }}"
       tasks:
         - debug:
-            msg:
-              - "{{server_name}}: {{ host_info }}"
+            msg: "EST {{ input_date }} will be {{ utc_date }} in UTC"
 
 
 
@@ -203,69 +199,18 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>Domain</b>
+                    <b>date_string</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>when supported</td>
+                <td>always</td>
                 <td>
-                            <div>Domain name</div>
+                            <div>Datetime in another timezone</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">CFD</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>IsVirtualMachine</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>when supported</td>
-                <td>
-                            <div>Virtual machine flag</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">True</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>MachineId</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td>when supported</td>
-                <td>
-                            <div>MachineId</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">16777222</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>Name</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>when supported</td>
-                <td>
-                            <div>hostname</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">SVRSCM2P002</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">08-25-2023 05:57:37</div>
                 </td>
             </tr>
     </table>

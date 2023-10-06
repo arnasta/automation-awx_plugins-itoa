@@ -5,7 +5,7 @@ __metaclass__ = type
 DOCUMENTATION = r"""
   name: date_tz_change
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
-  version_added: 1.0.0
+  version_added: 1.1.7
   short_description: This plugin converts date string from one timezone to another
   description:
       - This lookup returns a datetime string after converting it to another timezone.

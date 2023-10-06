@@ -1,6 +1,6 @@
 # automation-awx_plugins-itoa
 
-*Collection version 1.1.6*
+*Collection version 1.1.7*
 
 ## Description
 
@@ -19,6 +19,8 @@ These are the plugins in the cencora.itoa collection:
 ## Lookup plugins
 
 - [timedelta](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.timedelta_lookup.rst) – Get data with timedelta
+
+- [date_tz](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.date_tz_lookup.rst) – Date convertion to antoher timezone
 
 - [worknotes](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.worknotes_data_lookup.rst) – Get data from ServiceNow work note that includes yaml data
 
