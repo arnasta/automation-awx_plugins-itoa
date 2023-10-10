@@ -54,7 +54,7 @@ DOCUMENTATION = r"""
         - The total ICMP packet size is 8 bytes larger.
         - E.g. 8 (header) + 56 (payload) = 64 bytes
       default: 56
-      type: string
+      type: int
       ini:
         - section: ping
           key: size
