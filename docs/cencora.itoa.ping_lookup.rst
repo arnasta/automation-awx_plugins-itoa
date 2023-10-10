@@ -1,14 +1,14 @@
-.. _cencora.itoa.timedelta_lookup:
+.. _cencora.itoa.ping_lookup:
 
 
-**********************
-cencora.itoa.timedelta
-**********************
+*****************
+cencora.itoa.ping
+*****************
 
-**This plugin calculates timedelta**
+**This plugin is used to ping host using ICMP**
 
 
-Version added: 1.0.0
+Version added: 1.1.8
 
 .. contents::
    :local:
@@ -17,7 +17,8 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- This lookup returns a datetime string after adding or subtracting timedelta.
+- This lookup returns result of ping.
+- It utilizes ping3 module of python3.
 
 
 
@@ -49,75 +50,98 @@ Parameters
                     <td>
                     </td>
                 <td>
-                        <div>Input date string</div>
+                        <div>IP address or hostname to ping</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>delta</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                            <div> ini entries:
-                                    <p>[timedelta_lookup]<br>delta = VALUE</p>
-                            </div>
-                    </td>
-                <td>
-                        <div>Time delta string in form of &#x27;-1 day&#x27;</div>
-                        <div>First character should be sign &#x27;+&#x27; or &#x27;-&#x27;</div>
-                        <div>Amount should go after sign</div>
-                        <div>Units should follow the amount separated by space</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>format</b>
+                    <b>size</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">"%Y-%m-%dT%H:%M:%S.%f%z"</div>
+                        <b>Default:</b><br/><div style="color: blue">56</div>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[timedelta_lookup]<br>format = %Y-%m-%dT%H:%M:%S.%f%z</p>
+                                    <p>[ping]<br>size = 56</p>
                             </div>
                     </td>
                 <td>
-                        <div>Date format e.g. &#x27;%m-%d-%Y %H:%M:%S&#x27;</div>
-                        <div>Default data format is &#x27;%Y-%m-%dT%H:%M:%S.%f%z&#x27;</div>
+                        <div>Size of ICMP packet payload in bytes</div>
+                        <div>Size value range is 1-65500</div>
+                        <div>The total ICMP packet size is 8 bytes larger.</div>
+                        <div>E.g. 8 (header) + 56 (payload) = 64 bytes</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>out_format</b>
+                    <b>timeout</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">4</div>
+                </td>
+                    <td>
+                            <div> ini entries:
+                                    <p>[ping]<br>timeout = 4</p>
+                            </div>
+                    </td>
+                <td>
+                        <div>Timeout value of ping packet</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>ttl</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">64</div>
+                </td>
+                    <td>
+                            <div> ini entries:
+                                    <p>[ping]<br>ttl = 64</p>
+                            </div>
+                    </td>
+                <td>
+                        <div>Time-To-Live value of ICMP packet</div>
+                        <div>The packet is discarded if it does not reach the target host after jumps in under TTL value</div>
+                        <div>TTL value range is 1-255</div>
+                        <div>If value is out of range default will be used</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>unit</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">""</div>
+                        <b>Default:</b><br/><div style="color: blue">"s"</div>
                 </td>
                     <td>
                             <div> ini entries:
-                                    <p>[timedelta_lookup]<br>out_format = </p>
+                                    <p>[ping]<br>unit = s</p>
                             </div>
                     </td>
                 <td>
-                        <div>Date format e.g. &#x27;%m-%d-%Y %H:%M:%S&#x27;</div>
-                        <div>format is used for output format if this is not defined</div>
+                        <div>Unit of returned value</div>
+                        <div>Can be ms for milliseconds or s for seconds</div>
                 </td>
             </tr>
     </table>
@@ -156,11 +180,11 @@ Examples
       collections:
         - cencora.itoa
       vars:
-        input_date: "08-25-2023 05:57:37"
-        future_date: "{{ lookup('cencora.itoa.timedelta', input_date, delta='+16 days', format='%m-%d-%Y %H:%M:%S') }}"
+        hostname: "example.com"
+        ping_result: "{{ lookup('cencora.itoa.ping', hostname) }}"
       tasks:
         - debug:
-            msg: "16 days from {{ input }} will be {{ future_date }}"
+            msg: "Ping of {{ hostname }} is {{ ping_result }}"
 
 
 
@@ -179,18 +203,18 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>date_string</b>
+                    <b>ping_time</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">string</span>
+                      <span style="color: purple">float</span>
                     </div>
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Date with timedelta applied</div>
+                            <div>Ping result</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">08-25-2023 05:57:37</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">0.21569726151007967</div>
                 </td>
             </tr>
     </table>

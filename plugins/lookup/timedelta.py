@@ -10,7 +10,7 @@ DOCUMENTATION = r"""
   description:
       - This lookup returns a datetime string after adding or subtracting timedelta.
   notes:
-      - This module is part of the cencora.itoa collection (version 1.1.7).
+      - This module is part of the cencora.itoa collection (version 1.1.8).
       - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git).
       - You'll also want to create C(collections/requirements.yml) in your AWX playbook that 
         contains this content
@@ -55,7 +55,7 @@ collections:
   - name: cencora.itoa
     type: git
     source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-    version: 1.1.7
+    version: 1.1.8
 ---
 - hosts: localhost
   connection: local
