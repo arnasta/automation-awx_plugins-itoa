@@ -17,8 +17,8 @@ Version added: 1.1.8
 
 Synopsis
 --------
-- This lookup returns result of ping.
-- It utilizes ping3 module of python3.
+- This lookup returns response time of ping packet.
+- It utilizes ping command in os.
 
 
 
@@ -59,7 +59,7 @@ Parameters
                     <b>size</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">integer</span>
                     </div>
                 </td>
                 <td>
@@ -154,6 +154,10 @@ Notes
 .. note::
    - This module is part of the cencora.itoa collection (version 1.1.8).
    - To install it, use ``ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git``.
+   - Plugin sends 4 ping packets
+   - Plugin returns '' empty string is host is unreachable
+   - Plugin returns False if there was antoher error
+   - To look at errors use verbose run mode
 
 You'll also want to create ``collections/requirements.yml`` in your AWX playbook that contains this content
 

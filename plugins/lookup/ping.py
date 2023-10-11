@@ -8,11 +8,15 @@ DOCUMENTATION = r"""
   version_added: 1.1.8
   short_description: This plugin is used to ping host using ICMP
   description:
-      - This lookup returns result of ping.
-      - It utilizes ping3 module of python3.
+      - This lookup returns response time of ping packet.
+      - It utilizes ping command in os.
   notes:
       - This module is part of the cencora.itoa collection (version 1.1.8).
       - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git).
+      - Plugin sends 4 ping packets
+      - Plugin returns '' empty string is host is unreachable
+      - Plugin returns False if there was antoher error
+      - To look at errors use verbose run mode
       - You'll also want to create C(collections/requirements.yml) in your AWX playbook that 
         contains this content
   options:
