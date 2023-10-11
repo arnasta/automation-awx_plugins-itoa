@@ -125,7 +125,7 @@ class LookupModule(LookupBase):
                             ping_result = ping_result/1000
                     except:
                         display.debug(f"Cannot parse output: {output}")
-                        ping_result = None
+                        ping_result = False
                 except subprocess.CalledProcessError as e:
                     if e.returncode == 1:
                         display.debug(f"{term} unreachable")
