@@ -130,7 +130,7 @@ class LookupModule(LookupBase):
                     if e.returncode == 1:
                         display.debug(f"{term} unreachable")
                         ping_result = False
-                    elif 'Name or service not known' in e.output:
+                    elif b'Name or service not known' in e.output:
                         display.debug(f"{term} - Name or service not known")
                         ping_result = None
                     else:
