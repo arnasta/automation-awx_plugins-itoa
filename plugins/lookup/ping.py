@@ -105,7 +105,7 @@ class LookupModule(LookupBase):
         size = self.get_option('size')
         ret = []
         for term in terms:
-            display.vvv("Pinging: %s" % term)
+            display.v("Pinging: %s" % term)
             if isinstance(term, str):
                 if ttl < 1 and ttl > 256:
                     display.v("TTL is outside allowed range default value of 64 will be used")
