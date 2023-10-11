@@ -92,8 +92,7 @@ ping_time:
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
-import ping3
-
+import subprocess
 
 display = Display()
 
@@ -118,7 +117,25 @@ class LookupModule(LookupBase):
                 if not (unit == 's' or unit == 'ms'):
                     display.debug("Unit can only be 's' or 'ms'. Default value of 's' will be used")
                     unit = 's'
-                ping_result = ping3.ping(term, timeout=timeout, unit=unit, ttl=ttl, size=size)
+                try:
+                    output = subprocess.check_output(["ping", "-c", "4", "-W", str(timeout), "-t", str(ttl), "-s", str(size), term], stderr=subprocess.STDOUT)
+                    try:
+                        ping_result = float(output.split(b'\n')[-2].split()[-2].split(b'/')[1])
+                        if unit == 's':
+                            ping_result = ping_result/1000
+                    except:
+                        display.debug(f"Cannot parse output: {output}")
+                        ping_result = None
+                except subprocess.CalledProcessError as e:
+                    if e.returncode == 1:
+                        display.debug(f"{term} unreachable")
+                        ping_result = False
+                    elif 'Name or service not known' in e.output:
+                        display.debug(f"{term} - Name or service not known")
+                        ping_result = None
+                    else:
+                        display.debug(f"Other error: {e.output}")
+                        ping_result = None
             else:
                 raise AnsibleError(f"Input should be a string not '{type(term)}'")
             ret.append(ping_result)
