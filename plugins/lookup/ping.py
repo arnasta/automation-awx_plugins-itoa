@@ -85,8 +85,8 @@ RETURN = r"""
 ping_time:
   description: Ping result
   returned: always
-  type: float
-  sample: 0.215697261510079666
+  type: string
+  sample: '0.215697261510079666'
 """
 
 from ansible.errors import AnsibleError, AnsibleParserError
@@ -105,17 +105,17 @@ class LookupModule(LookupBase):
         size = self.get_option('size')
         ret = []
         for term in terms:
-            display.debug("Pinging: %s" % term)
+            display.vvv("Pinging: %s" % term)
             if isinstance(term, str):
                 if ttl < 1 and ttl > 256:
-                    display.debug("TTL is outside allowed range default value of 64 will be used")
+                    display.vvv("TTL is outside allowed range default value of 64 will be used")
                     ttl = 64
                 if size < 1 and size > 65500: # max size is 65507 which is 65535 (max ip length) - 20 (ip hdr) - 8 (icmp/ping hdr) = 65507
                     # Windows OS blocks max size at 65500 but in Linux you can ping up to the real limit
-                    display.debug("Size is outside allowed range default value of 56 will be used")
+                    display.vvv("Size is outside allowed range default value of 56 will be used")
                     size = 56
                 if not (unit == 's' or unit == 'ms'):
-                    display.debug("Unit can only be 's' or 'ms'. Default value of 's' will be used")
+                    display.vvv("Unit can only be 's' or 'ms'. Default value of 's' will be used")
                     unit = 's'
                 try:
                     output = subprocess.check_output(["ping", "-c", "4", "-W", str(timeout), "-t", str(ttl), "-s", str(size), term], stderr=subprocess.STDOUT)
@@ -124,18 +124,18 @@ class LookupModule(LookupBase):
                         if unit == 's':
                             ping_result = ping_result/1000
                     except:
-                        display.debug(f"Cannot parse output: {output}")
-                        ping_result = False
+                        display.vvv(f"Cannot parse output: {output}")
+                        ping_result = 'parse error'
                 except subprocess.CalledProcessError as e:
                     if e.returncode == 1:
-                        display.debug(f"{term} unreachable")
-                        ping_result = None
+                        display.vvv(f"{term} unreachable")
+                        ping_result = 'timeout'
                     elif b'Name or service not known' in e.output:
-                        display.debug(f"{term} - Name or service not known")
-                        ping_result = False
+                        display.vvv(f"{term} - Name or service not known")
+                        ping_result = 'name or service not known'
                     else:
-                        display.debug(f"Other error: {e.output}")
-                        ping_result = False
+                        display.vvv(f"Other error: {e.output}")
+                        ping_result = 'other error'
             else:
                 raise AnsibleError(f"Input should be a string not '{type(term)}'")
             ret.append(ping_result)
