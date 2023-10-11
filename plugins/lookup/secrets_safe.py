@@ -170,14 +170,14 @@ class LookupModule(LookupBase):
             bt_password,
             bt_cert_verify
         )
-        display.debug(f"Doing bt authenticate...")
+        display.vvv(f"Doing bt authenticate...")
         bt.authenticate()
-        display.debug(f"Get folders")
+        display.vvv(f"Get folders")
         bt.get_folders()
         ret = []
         creds_dict = dict()
         for term in terms:
-            display.debug(f"Searching for {term}")
+            display.vvv(f"Searching for {term}")
             term_split = term.split('/')
             if len(term_split) > 1:
                 title = term_split[-1]
@@ -228,7 +228,7 @@ class BtApi:
             ):
         self.base_uri = f"{base_uri}BeyondTrust/api/public/v3"
         self.bt_cert_verify=bt_cert_verify
-        display.debug(f"Base uri is: {self.base_uri}")
+        display.vvv(f"Base uri is: {self.base_uri}")
         self.auth_header = {
             "Authorization":
             f"PS-Auth key={api_key}; runas={username}; pwd=[{password}];"
@@ -237,7 +237,7 @@ class BtApi:
         self.session = requests.Session()
 
     def get_folders(self):
-        display.debug("Getting folder list for Team Passwords")
+        display.vvv("Getting folder list for Team Passwords")
         try:
             response = self.session.get(
                 f"{self.base_uri}/Secrets-Safe/Folders")
@@ -246,7 +246,7 @@ class BtApi:
         self.folders = self.__handle_reponse(response)
 
     def get_credentials(self, folder_id):
-        display.debug(f"Getting credential list for folder {folder_id}")
+        display.vvv(f"Getting credential list for folder {folder_id}")
         try:
             response = self.session.get(
                 f"{self.base_uri}/Secrets-Safe/Folders/{folder_id}/secrets")
@@ -255,7 +255,7 @@ class BtApi:
         self.credentials = self.__handle_reponse(response)
 
     def get_credential(self, credential_id):
-        display.debug(f"Getting credential information for credential ID {credential_id}")
+        display.vvv(f"Getting credential information for credential ID {credential_id}")
         try:
             response = self.session.get(
                 f"{self.base_uri}/Secrets-Safe/Secrets/{credential_id}")
@@ -264,7 +264,7 @@ class BtApi:
         return self.__handle_reponse(response)
 
     def get_file(self, file_id):
-        display.debug(f"Getting file for {file_id}")
+        display.vvv(f"Getting file for {file_id}")
         try:
             response = self.session.get(
                 f"{self.base_uri}/Secrets-Safe/Secrets/{file_id}/file/download")
@@ -273,7 +273,7 @@ class BtApi:
         return self.__handle_reponse_filecontents(response)
 
     def authenticate(self):
-        display.debug("Authenticating to BeyondTrust API")
+        display.vvv("Authenticating to BeyondTrust API")
         url = f"{self.base_uri}/Auth/SignAppin"
         try:
             response = self.session.post(
@@ -281,16 +281,16 @@ class BtApi:
         except Exception as e:
             raise AnsibleError(f"Could not connect to {url} Error was: {e}")
         self.__handle_reponse(response)
-        display.debug("Succesfully authenticated to BeyondTrust API")
+        display.vvv("Succesfully authenticated to BeyondTrust API")
 
     def signout(self):
-        display.debug("Signing out from BeyondTrust API")
+        display.vvv("Signing out from BeyondTrust API")
         try:
             self.session.post(
                 f"{self.base_uri}/Auth/SignOut", verify=self.bt_cert_verify)
         except Exception as e:
             raise AnsibleError(f"Could not connect to {self.base_uri}")
-        display.debug("Succesfully signed out from BeyondTrust API")
+        display.vvv("Succesfully signed out from BeyondTrust API")
 
     def __handle_reponse(self, response):
         if not response.status_code == 200:

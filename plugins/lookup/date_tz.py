@@ -105,7 +105,7 @@ class LookupModule(LookupBase):
         out_tz = self.get_option('out_tz')
         ret = []
         for term in terms:
-            display.debug("date_tz lookup term: %s" % term)
+            display.vvv("date_tz lookup term: %s" % term)
             if isinstance(term, str):
                 try:
                     input_date = datetime.datetime.strptime(term, format)

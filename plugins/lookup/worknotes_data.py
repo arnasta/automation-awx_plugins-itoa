@@ -119,7 +119,7 @@ class LookupModule(LookupBase):
         user = self.get_option('user')
         ret = []
         for term in terms:
-            display.debug("worknotes_data lookup term: %s" % term)
+            display.vvv("worknotes_data lookup term: %s" % term)
             if isinstance(term, str):
                 text = term.replace('[code]<pre>','').replace('</pre>[code]','').replace('<br>','\n') # fix for better yaml display in ServiceNow
                 if '--- # yaml start' in text:
@@ -136,12 +136,12 @@ class LookupModule(LookupBase):
                             worknote_date = block_info.split(' - ')[0]
                             worknote_user = block_info.split(' - ')[1].split(' (Work notes)')[0]
                         except:
-                            display.debug(f"Cannot extract date from {block_info}")
+                            display.vvv(f"Cannot extract date from {block_info}")
                             continue
                         try:
                             worknote_data = yaml.safe_load(block.split('...')[0])
                         except:
-                            display.debug(f"Cannot load yaml from {block.split('...')[0]}")
+                            display.vvv(f"Cannot load yaml from {block.split('...')[0]}")
                             continue
                         if not (user and worknote_user == user):
                             continue
@@ -155,7 +155,7 @@ class LookupModule(LookupBase):
                         data.append(yaml_dict.copy())
                     ret.append(data)
                 else:
-                    display.debug("Data not found")
+                    display.vvv("Data not found")
             else:
                 raise AnsibleError(f"Input should be a string not '{type(term)}'")
         return ret

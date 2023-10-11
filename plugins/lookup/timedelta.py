@@ -95,7 +95,7 @@ class LookupModule(LookupBase):
         delta = self.get_option('delta')
         ret = []
         for term in terms:
-            display.debug("timedelta lookup term: %s" % term)
+            display.vvv("timedelta lookup term: %s" % term)
             if isinstance(term, str):
                 sign = delta[0]
                 try:
