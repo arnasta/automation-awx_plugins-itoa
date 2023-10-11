@@ -85,8 +85,8 @@ RETURN = r"""
 ping_time:
   description: Ping result
   returned: always
-  type: string
-  sample: '0.215697261510079666'
+  type: float
+  sample: 0.215697261510079666
 """
 
 from ansible.errors import AnsibleError, AnsibleParserError
@@ -125,17 +125,17 @@ class LookupModule(LookupBase):
                             ping_result = ping_result/1000
                     except:
                         display.vvv(f"Cannot parse output: {output}")
-                        ping_result = 'parse error'
+                        ping_result = False
                 except subprocess.CalledProcessError as e:
                     if e.returncode == 1:
                         display.vvv(f"{term} unreachable")
-                        ping_result = 'timeout'
+                        ping_result = None
                     elif b'Name or service not known' in e.output:
                         display.vvv(f"{term} - Name or service not known")
-                        ping_result = 'name or service not known'
+                        ping_result = False
                     else:
                         display.vvv(f"Other error: {e.output}")
-                        ping_result = 'other error'
+                        ping_result = False
             else:
                 raise AnsibleError(f"Input should be a string not '{type(term)}'")
             ret.append(ping_result)
