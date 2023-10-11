@@ -124,18 +124,15 @@ class LookupModule(LookupBase):
                         if unit == 's':
                             ping_result = ping_result/1000
                     except:
-                        display.debug(f"Cannot parse output: {output}")
-                        ping_result = False
+                         raise AnsibleError(f"Cannot parse output: {output}")
                 except subprocess.CalledProcessError as e:
                     if e.returncode == 1:
                         display.debug(f"{term} unreachable")
                         ping_result = None
                     elif b'Name or service not known' in e.output:
-                        display.debug(f"{term} - Name or service not known")
-                        ping_result = False
+                         raise AnsibleError(f"{term} - Name or service not known")
                     else:
-                        display.debug(f"Other error: {e.output}")
-                        ping_result = False
+                        raise AnsibleError(f"Unknown error: {e.output}")
             else:
                 raise AnsibleError(f"Input should be a string not '{type(term)}'")
             ret.append(ping_result)
