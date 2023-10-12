@@ -182,6 +182,8 @@ class LookupModule(LookupBase):
                                 break
                         targetlbvservers.append({'ns_ip_address': ns_ip_address, 'name': targetlbvserver})
                     for targetlbvserver in targetlbvservers:
+                        if not targetlbvserver:
+                            continue
                         service_bindings = api_call('https://' + targetlbvserver['ns_ip_address'] + adc_lbvserver_service_binding_endpoint + '/'  + targetlbvserver['name'], auth).get('lbvserver_service_binding', [])
                         for service_binding in service_bindings:
                             services = api_call('https://' + targetlbvserver['ns_ip_address'] + adc_service_endpoint + '/'  + service_binding['servicename'], auth).get('service', [])
