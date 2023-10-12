@@ -123,7 +123,7 @@ def resolve_ip(hostname):
         return []
 
 def api_call(url, auth):
-    display.v(f"Feching info from {url}")
+    display.vv(f"Feching info from {url}")
     response = requests.get(url, auth=auth, verify=False)
     display.vvv(f"Response status code {str(response.status_code)}")
     if response.status_code != 200:
@@ -142,7 +142,7 @@ class LookupModule(LookupBase):
         auth = HTTPBasicAuth(username, password)
         ret = []
         for term in terms:
-            display.vvv("url_to_backend lookup term: %s" % term)
+            display.v("url_to_backend lookup term: %s" % term)
             if isinstance(term, str):
                 target_servers = []
                 if term.lower().startswith('https://'):
@@ -158,7 +158,7 @@ class LookupModule(LookupBase):
                     cs_vservers = api_call(adm_hostname + adm_csvservers_endpoint + '?filter=vsvr_ip_address:' + ip_address + ',vsvr_type:' + protocol, auth).get('ns_csvserver', [])
                     targetlbvservers = []
                     if not cs_vservers and not lb_vservers:
-                        display.v(f"No lb or cs vservers found on ADM")
+                        display.vv(f"No lb or cs vservers found on ADM")
                     for lb_vserver in lb_vservers:
                         targetlbvservers.append({'ns_ip_address': lb_vserver['ns_ip_address'], 'name': lb_vserver['name']})
                     for cs_vserver in cs_vservers:
@@ -170,15 +170,15 @@ class LookupModule(LookupBase):
                         for policy in sorted_policies:
                             policy_rule = policy.get('rule', '')
                             if not policy_rule:
-                                display.vvvv(f"Policy rule not found for {policy['policyname']} doing extra API call")
+                                display.vvv(f"Policy rule not found for {policy['policyname']} doing extra API call")
                                 cspolicy = api_call('https://' + ns_ip_address + adc_cspolicy_endpoint + '/' + policy['policyname'], auth).get('cspolicy', [])
                                 if cspolicy:
                                     policy_rule = cspolicy[0].get('rule', '')
-                            display.vvvv(f"Evaluating policy: {policy['policyname']}")
-                            display.vvvv(f"Policy rule: {policy_rule}")
+                            display.vvv(f"Evaluating policy: {policy['policyname']}")
+                            display.vvv(f"Policy rule: {policy_rule}")
                             if policy_match(term, policy_rule):
                                 targetlbvserver = policy['targetlbvserver']
-                                display.vvv(f"Found matching policy. Target loadbalancer {policy['targetlbvserver']}")
+                                display.vv(f"Found matching policy. Target loadbalancer {policy['targetlbvserver']}")
                                 break
                         targetlbvservers.append({'ns_ip_address': ns_ip_address, 'name': targetlbvserver})
                     for targetlbvserver in targetlbvservers:
