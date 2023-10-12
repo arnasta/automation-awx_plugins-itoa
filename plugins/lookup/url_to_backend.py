@@ -175,7 +175,7 @@ class LookupModule(LookupBase):
                                 if cspolicy:
                                     policy_rule = cspolicy[0].get('rule', '')
                             display.vvvv(f"Evaluating policy: {policy['policyname']}")
-                            display.vvvvv(f"Policy rule: {policy_rule}")
+                            display.vvvv(f"Policy rule: {policy_rule}")
                             if policy_match(term, policy_rule):
                                 targetlbvserver = policy['targetlbvserver']
                                 display.vvv(f"Found matching policy. Target loadbalancer {policy['targetlbvserver']}")
