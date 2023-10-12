@@ -170,6 +170,7 @@ class LookupModule(LookupBase):
                         for policy in sorted_policies:
                             policy_rule = policy.get('rule', '')
                             if not policy_rule:
+                                display.vvvv(f"Policy rule not found for {policy['policyname']} doing extra API call")
                                 cspolicy = api_call('https://' + ns_ip_address + adc_cspolicy_endpoint + '/' + policy['policyname'], auth).get('cspolicy', [])
                                 if cspolicy:
                                     policy_rule = cspolicy[0].get('rule', '')
