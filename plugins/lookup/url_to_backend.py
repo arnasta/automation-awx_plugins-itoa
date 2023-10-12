@@ -108,6 +108,7 @@ adm_csvservers_endpoint = api_path + 'ns_csvserver'
 adc_csvserver_cspolicy_binding_endpoint = api_path + 'csvserver_cspolicy_binding'
 adc_lbvserver_service_binding_endpoint = api_path + 'lbvserver_service_binding'
 adc_lbvserver_servicegroup_binding_endpoint = api_path+ 'lbvserver_servicegroup_binding'
+adc_cspolicy_endpoint = api_path + 'cspolicy'
 adc_service_endpoint = api_path + 'service'
 adc_servicegroup_servicegroupmember_binding_endpoint = api_path + 'servicegroup_servicegroupmember_binding'
 adc_server_endpoint = api_path + 'server'
@@ -167,9 +168,14 @@ class LookupModule(LookupBase):
                         csvserver_policies = api_call('https://' + ns_ip_address + adc_csvserver_cspolicy_binding_endpoint + '/' + cs_vserver_name, auth).get('csvserver_cspolicy_binding', [])
                         sorted_policies = sorted(csvserver_policies, key=lambda x: int(x['priority']))
                         for policy in sorted_policies:
+                            policy_rule = policy.get('rule', '')
+                            if not policy_rule:
+                                cspolicy = api_call('https://' + ns_ip_address + adc_cspolicy_endpoint + '/' + policy['policyname'], auth).get('cspolicy', [])
+                                if cspolicy:
+                                    policy_rule = cspolicy[0].get('rule', '')
                             display.vvvv(f"Evaluating policy: {policy['policyname']}")
-                            display.vvvvv(f"Policy rule: {policy['rule']}")
-                            if policy_match(term, policy['rule']):
+                            display.vvvvv(f"Policy rule: {policy_rule}")
+                            if policy_match(term, policy_rule):
                                 targetlbvserver = policy['targetlbvserver']
                                 display.vvv(f"Found matching policy. Target loadbalancer {policy['targetlbvserver']}")
                                 break
