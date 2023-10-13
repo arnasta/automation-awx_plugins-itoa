@@ -130,8 +130,73 @@ def api_call(url, auth):
         raise AnsibleError(f"http error : {response.status_code}: {response.text}")
     return response.json()
 
+def convert_to_new_rule(rule):
+    return rule.replace("req.http.url == '",'http.req.url.startswith("').replace("*'",'")')
+
 def policy_match(url, rule):
-    return False
+    url = url.lower()
+    rule = rule.lower()
+    display.vvv(f"Url: {url}")
+    display.vvv(f"Policy rule: {rule}")
+    url_split = url.replace('https://','').replace('http://','').split("/")
+    hostname = url_split[0]
+    if len(url_split) > 1:
+        path = '/' + '/'.join(url_split[1:])
+    else:
+        path = ''
+    if '&&' in rule and '||' in rule: # compound expression e.g. http.req.hostname.eq("abcordersnd.amerisourcebergen.com") && (HTTP.REQ.URL.STARTSWITH("/bw") || HTTP.REQ.URL.STARTSWITH("/sap"))
+        # split_and = rule.split('&&')
+        display.vvv(f"Advanced compound expression found in rule: {rule}. This is not supproted")
+        return False
+    elif '&&' in rule:
+        rules = rule.split('&&')
+        results = []
+        for nested_rule in rules:
+            results.append(policy_match(url, nested_rule))
+        return all(results)
+    elif '||' in rule:
+        rules = rule.split('||')
+        results = []
+        for nested_rule in rules:
+            results.append(policy_match(url, nested_rule))
+        return any(results) 
+    else:
+        if 'req.http' in rule: # old format
+            rule = convert_to_new_rule(rule)
+        rule = rule.strip().strip('(').strip(')').strip('"').replace("'",'')
+        if not (rule.startswith('http.req.url.') or rule.startswith('http.req.hostname.')):
+            display.vvv(f"Rule not supported: {rule}.")
+
+        rule = rule.replace('.set_text_mode(ignorecase)','').replace('http.req.','')
+        split_rule = rule.split('("')
+        if not len(split_rule) == 2:
+            display.vvv(f"Rule did not split well: {split_rule}.")
+            return False
+        first_part_split = split_rule[0].split('.')
+        if not len(first_part_split) == 2:
+            display.vvv(f"Rule did not split well: {split_rule}.")
+            return False
+        element = first_part_split[0]
+        test = first_part_split[1]
+        eval_var = split_rule[1]
+        if element == 'hostname':
+            if test == 'eq':
+                return hostname == eval_var
+            elif test == 'ne':
+                return hostname != eval_var
+            elif test == 'contains':
+                return eval_var in hostname
+            else:
+                display.vvv(f"Test not supported: {test}.")
+                return False
+        else:
+            if test == 'startswith':
+                return path.startswith(eval_var)
+            elif test == 'contains':
+                return eval_var in path
+            else:
+                display.vvv(f"Test not supported: {test}.")
+                return False
 
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, **kwargs):
@@ -175,7 +240,6 @@ class LookupModule(LookupBase):
                                 if cspolicy:
                                     policy_rule = cspolicy[0].get('rule', '')
                             display.vvv(f"Evaluating policy: {policy['policyname']}")
-                            display.vvv(f"Policy rule: {policy_rule}")
                             if policy_match(term, policy_rule):
                                 targetlbvserver = policy['targetlbvserver']
                                 display.vv(f"Found matching policy. Target loadbalancer {policy['targetlbvserver']}")
