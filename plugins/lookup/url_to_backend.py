@@ -237,8 +237,8 @@ def policy_match(url, rule):
     else:
         path = ''
     display.vvv(f"Url: '{url}'")
-    display.vvv(f"Hostname: '{url}'")
-    display.vvv(f"Path: '{url}'")
+    display.vvv(f"Hostname: '{hostname}'")
+    display.vvv(f"Path: '{path}'")
     display.vvv(f"Policy rule: '{rule}'")
     if 'req.http' in rule: # classic policy expression
         display.vvv(f"Classic policy expression: {rule} detected. Converting to advanced.")
