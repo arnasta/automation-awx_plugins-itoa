@@ -243,7 +243,7 @@ def policy_match(url, rule):
     if 'req.http' in rule: # classic policy expression
         display.vvv(f"Classic policy expression: {rule} detected. Converting to advanced.")
         rule = convert_to_advanced_expression(rule)
-    rule = rule.replace('("','[').replace('")',']').replace(' ','')
+    rule = rule.replace('("','[').replace('")',']').replace(' ','').replace('url.path','url')
     display.vvv(f"Final optimized rule: '{rule}'")
     try:
         result = eval_compound_advanced_expression(rule, hostname, path)
