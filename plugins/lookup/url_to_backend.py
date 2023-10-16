@@ -123,80 +123,135 @@ def resolve_ip(hostname):
         return []
 
 def api_call(url, auth):
-    display.vv(f"Feching info from {url}")
+    display.vv(f"Fetching info from {url}")
     response = requests.get(url, auth=auth, verify=False)
     display.vvv(f"Response status code {str(response.status_code)}")
     if response.status_code != 200:
         raise AnsibleError(f"http error : {response.status_code}: {response.text}")
     return response.json()
 
-def convert_to_new_rule(rule):
+open_list = ['(']
+close_list = [')']
+operator_list = ['|','&']
+
+def convert_to_advanced_expression(rule):
     return rule.replace("req.http.url == '",'http.req.url.startswith("').replace("*'",'")')
+
+def eval_advanced_expression(rule, hostname, path):
+    rule = rule.replace(']','')
+    rule_split = rule.split('[')
+    first_part_split = rule_split[0].split('.')[2:]
+    eval_var = rule_split[1]
+    element = first_part_split[0]
+    test = first_part_split[1]
+    ret = False
+    display.vvvv(f'Test: {element} {test} {eval_var}')
+    if element == 'hostname':
+        if test == 'eq':
+            ret = bool(hostname == eval_var)
+        elif test == 'ne':
+            ret = bool(hostname != eval_var)
+        elif test == 'contains':
+            ret = bool(eval_var in hostname)
+        else:
+            display.v(f"Test not supported: {test}.")
+    else:
+        if test == 'startswith':
+            ret = bool(path.startswith(eval_var))
+        elif test == 'contains':
+            ret = bool(eval_var in path)
+        else:
+            display.v(f"Test not supported: {test}.")
+    return ret
+
+def eval_compound_advanced_expression(rule, hostname, path):
+    display.vvv(f'Expression: "{rule}"')
+    expression =  ''
+    previous_char = ''
+    previous_test = False
+    operator = 'or'
+    open_count = 0
+    result = False
+    for i in rule:
+        if i in open_list:
+            display.vvvvv(f'Opening parenthesis found.')
+            open_count+=1
+            if expression:
+                expression += i
+        elif i in close_list:
+            display.vvvvv(f'Closing parenthesis found.')
+            open_count-=1
+            if open_count == 0:
+                display.vvvvv(f'Top most closing parenthesis found. Expression: "{expression}"')
+                if operator == 'or':
+                    recursive_result = eval_compound_advanced_expression(expression, hostname, path)
+                    result = bool(previous_test or recursive_result)
+                else:
+                    recursive_result = eval_compound_advanced_expression(expression, hostname, path)
+                    result = bool(previous_test and recursive_result)
+                previous_test = result
+                expression =  ''
+            else:
+                expression += i
+        elif i in operator_list and previous_char == i and open_count == 0:
+            display.vvvvv(f'Full operator found "{i}{i}"')
+            if i == '|':
+                operator == 'or'
+            else:
+                operator == 'and'
+        elif i in operator_list and open_count == 0:
+            display.vvvvv(f'Operator found "{i}"')
+            if expression:
+                display.vvvvv(f'Completing expression: "{expression}"')
+                if operator == 'or':
+                    recursive_result = eval_compound_advanced_expression(expression, hostname, path)
+                    display.vvvvv(f'Recursive result: {recursive_result}')
+                    result = bool(previous_test or recursive_result)
+                else:
+                    recursive_result = eval_compound_advanced_expression(expression, hostname, path)
+                    display.vvvvv(f'Recursive result: {recursive_result}')
+                    result = bool(previous_test and recursive_result)
+                previous_test = result
+                expression =  ''
+        else:
+            expression += i
+        previous_char = i
+    if expression:
+        display.vvvvv(f'Completing expression: "{expression}"')
+        if operator == 'or':
+            result = bool(previous_test or eval_advanced_expression(expression, hostname, path))
+        else:
+            result = bool(previous_test and eval_advanced_expression(expression, hostname, path))
+        previous_test = result
+        expression =  ''
+    display.vvvvv(f'Returning result: {result}')
+    return result
 
 def policy_match(url, rule):
     url = url.lower()
     rule = rule.lower()
-    display.vvv(f"Url: {url}")
-    display.vvv(f"Policy rule: {rule}")
     url_split = url.replace('https://','').replace('http://','').split("/")
     hostname = url_split[0]
     if len(url_split) > 1:
         path = '/' + '/'.join(url_split[1:])
     else:
         path = ''
-    if '&&' in rule and '||' in rule: # compound expression e.g. http.req.hostname.eq("abcordersnd.amerisourcebergen.com") && (HTTP.REQ.URL.STARTSWITH("/bw") || HTTP.REQ.URL.STARTSWITH("/sap"))
-        # split_and = rule.split('&&')
-        display.vvv(f"Advanced compound expression found in rule: {rule}. This is not supproted")
-        return False
-    elif '&&' in rule:
-        rules = rule.split('&&')
-        results = []
-        for nested_rule in rules:
-            results.append(policy_match(url, nested_rule))
-        return all(results)
-    elif '||' in rule:
-        rules = rule.split('||')
-        results = []
-        for nested_rule in rules:
-            results.append(policy_match(url, nested_rule))
-        return any(results) 
-    else:
-        if 'req.http' in rule: # old format
-            rule = convert_to_new_rule(rule)
-        rule = rule.strip().strip('(').strip(')').strip('"').replace("'",'')
-        if not (rule.startswith('http.req.url.') or rule.startswith('http.req.hostname.')):
-            display.vvv(f"Rule not supported: {rule}.")
-
-        rule = rule.replace('.set_text_mode(ignorecase)','').replace('http.req.','')
-        split_rule = rule.split('("')
-        if not len(split_rule) == 2:
-            display.vvv(f"Rule did not split well: {split_rule}.")
-            return False
-        first_part_split = split_rule[0].split('.')
-        if not len(first_part_split) == 2:
-            display.vvv(f"Rule did not split well: {split_rule}.")
-            return False
-        element = first_part_split[0]
-        test = first_part_split[1]
-        eval_var = split_rule[1]
-        if element == 'hostname':
-            if test == 'eq':
-                return hostname == eval_var
-            elif test == 'ne':
-                return hostname != eval_var
-            elif test == 'contains':
-                return eval_var in hostname
-            else:
-                display.vvv(f"Test not supported: {test}.")
-                return False
-        else:
-            if test == 'startswith':
-                return path.startswith(eval_var)
-            elif test == 'contains':
-                return eval_var in path
-            else:
-                display.vvv(f"Test not supported: {test}.")
-                return False
+    display.vvv(f"Url: '{url}'")
+    display.vvv(f"Hostname: '{url}'")
+    display.vvv(f"Path: '{url}'")
+    display.vvv(f"Policy rule: '{rule}'")
+    if 'req.http' in rule: # classic policy expression
+        display.vvv(f"Classic policy expression: {rule} detected. Converting to advanced.")
+        rule = convert_to_advanced_expression(rule)
+    rule = rule.replace('("','[').replace('")',']').replace(' ','')
+    display.vvv(f"Final optimized rule: '{rule}'")
+    try:
+        result = eval_compound_advanced_expression(rule, hostname, path)
+        display.vvv(f"Expression evaluated to {result}")
+    except Exception as e:
+         display.vvv(f"Error evaluating policy expression {rule}. Error: {e}. Setting result to false.")
+         result = False
+    return result
 
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, **kwargs):
