@@ -270,6 +270,7 @@ class LookupModule(LookupBase):
     def run(self, terms, variables=None, **kwargs):
         self.set_options(var_options=variables, direct=kwargs)
         adm_hostname = 'https://' + self.get_option('adm_hostname')
+        adc_domain = '.'.join(self.get_option('adm_hostname').split('.')[:-2])
         username = self.get_option('username')
         password = self.get_option('password')
         auth = HTTPBasicAuth(username, password)
@@ -293,18 +294,19 @@ class LookupModule(LookupBase):
                     if not cs_vservers and not lb_vservers:
                         display.vv(f"No lb or cs vservers found on ADM")
                     for lb_vserver in lb_vservers:
-                        targetlbvservers.append({'ns_ip_address': lb_vserver['ns_ip_address'], 'name': lb_vserver['name']})
+                        targetlbvservers.append({'ns_ip_address': lb_vserver['ns_ip_address'], 'name': lb_vserver['name'], 'hostname': lb_vserver['hostname'] + '.' + adc_domain})
                     for cs_vserver in cs_vservers:
+                        ns_hostname = cs_vserver['hostname'] + '.' + adc_domain
                         ns_ip_address = cs_vserver['ns_ip_address']
                         cs_vserver_name = cs_vserver['name']
                         targetlbvserver = cs_vserver['targetlbvserver']
-                        csvserver_policies = api_call('https://' + ns_ip_address + adc_csvserver_cspolicy_binding_endpoint + '/' + cs_vserver_name, auth).get('csvserver_cspolicy_binding', [])
+                        csvserver_policies = api_call('https://' + ns_hostname + adc_csvserver_cspolicy_binding_endpoint + '/' + cs_vserver_name, auth).get('csvserver_cspolicy_binding', [])
                         sorted_policies = sorted(csvserver_policies, key=lambda x: int(x['priority']))
                         for policy in sorted_policies:
                             policy_rule = policy.get('rule', '')
                             if not policy_rule:
                                 display.vvv(f"Policy rule not found for {policy['policyname']} doing extra API call")
-                                cspolicy = api_call('https://' + ns_ip_address + adc_cspolicy_endpoint + '/' + policy['policyname'], auth).get('cspolicy', [])
+                                cspolicy = api_call('https://' + ns_hostname + adc_cspolicy_endpoint + '/' + policy['policyname'], auth).get('cspolicy', [])
                                 if cspolicy:
                                     policy_rule = cspolicy[0].get('rule', '')
                             display.vvv(f"Evaluating policy: {policy['policyname']}")
@@ -312,22 +314,22 @@ class LookupModule(LookupBase):
                                 targetlbvserver = policy['targetlbvserver']
                                 display.vv(f"Found matching policy. Target loadbalancer {policy['targetlbvserver']}")
                                 break
-                        targetlbvservers.append({'ns_ip_address': ns_ip_address, 'name': targetlbvserver})
+                        targetlbvservers.append({'ns_ip_address': ns_ip_address, 'name': targetlbvserver, 'hostname': ns_hostname})
                     for targetlbvserver in targetlbvservers:
                         if not targetlbvserver['name']:
                             continue
-                        service_bindings = api_call('https://' + targetlbvserver['ns_ip_address'] + adc_lbvserver_service_binding_endpoint + '/'  + targetlbvserver['name'], auth).get('lbvserver_service_binding', [])
+                        service_bindings = api_call('https://' + targetlbvserver['hostname'] + adc_lbvserver_service_binding_endpoint + '/'  + targetlbvserver['name'], auth).get('lbvserver_service_binding', [])
                         for service_binding in service_bindings:
-                            services = api_call('https://' + targetlbvserver['ns_ip_address'] + adc_service_endpoint + '/'  + service_binding['servicename'], auth).get('service', [])
+                            services = api_call('https://' + targetlbvserver['hostname'] + adc_service_endpoint + '/'  + service_binding['servicename'], auth).get('service', [])
                             for service in services:
-                                servers = api_call('https://' + targetlbvserver['ns_ip_address'] + adc_server_endpoint + '/'  + service['servername'], auth).get('server', [])
+                                servers = api_call('https://' + targetlbvserver['hostname'] + adc_server_endpoint + '/'  + service['servername'], auth).get('server', [])
                                 for server in servers:
                                     target_servers.append(server)
-                        servicegroup_bindings = api_call('https://' + targetlbvserver['ns_ip_address'] + adc_lbvserver_servicegroup_binding_endpoint + '/'  + targetlbvserver['name'], auth).get('lbvserver_servicegroup_binding', [])
+                        servicegroup_bindings = api_call('https://' + targetlbvserver['hostname'] + adc_lbvserver_servicegroup_binding_endpoint + '/'  + targetlbvserver['name'], auth).get('lbvserver_servicegroup_binding', [])
                         for servicegroup_binding in servicegroup_bindings:
-                            servicegroup_members = api_call('https://' + targetlbvserver['ns_ip_address'] + adc_servicegroup_servicegroupmember_binding_endpoint + '/'  + servicegroup_binding['servicename'], auth).get('servicegroup_servicegroupmember_binding', [])
+                            servicegroup_members = api_call('https://' + targetlbvserver['hostname'] + adc_servicegroup_servicegroupmember_binding_endpoint + '/'  + servicegroup_binding['servicename'], auth).get('servicegroup_servicegroupmember_binding', [])
                             for servicegroup_member in servicegroup_members:
-                                servers = api_call('https://' + targetlbvserver['ns_ip_address'] + adc_server_endpoint + '/'  + servicegroup_member['servername'], auth).get('server', [])
+                                servers = api_call('https://' + targetlbvserver['hostname'] + adc_server_endpoint + '/'  + servicegroup_member['servername'], auth).get('server', [])
                                 for server in servers:
                                     target_servers.append(server)
                 ret.append(target_servers)
