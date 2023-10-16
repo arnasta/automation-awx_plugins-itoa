@@ -5,12 +5,12 @@ __metaclass__ = type
 DOCUMENTATION = r"""
   name: url_to_backend
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
-  version_added: 1.1.7
+  version_added: 1.1.9
   short_description: This plugin resolves what backend server(s) are behind url
   description:
       - This lookup returns list of servers that are servicing specific url.
   notes:
-      - This module is part of the cencora.itoa collection (version 1.1.8).
+      - This module is part of the cencora.itoa collection (version 1.1.9).
       - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git).
       - You'll also want to create C(collections/requirements.yml) in your AWX playbook that 
         contains this content
@@ -49,7 +49,7 @@ collections:
   - name: cencora.itoa
     type: git
     source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-    version: 1.1.8
+    version: 1.1.9
 ---
 - hosts: localhost
   connection: local
@@ -84,12 +84,12 @@ returned_value:
       state: "ENABLED"
       hashid: "0"
       graceful: "NO"
-      delay: 0
-      delay1: 0
+      delay: "0"
+      delay1: "0"
       nameserver: "0.0.0.0"
-      dbsttl: 0
+      dbsttl: "0"
       orderstr: "Default"
-      trofsdelay: "0
+      trofsdelay: "0"
 """
 
 from ansible.errors import AnsibleError, AnsibleParserError

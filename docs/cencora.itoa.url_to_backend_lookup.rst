@@ -1,14 +1,14 @@
-.. _cencora.itoa.timedelta_lookup:
+.. _cencora.itoa.url_to_backend_lookup:
 
 
-**********************
-cencora.itoa.timedelta
-**********************
+***************************
+cencora.itoa.url_to_backend
+***************************
 
-**This plugin calculates timedelta**
+**This plugin resolves what backend server(s) are behind url**
 
 
-Version added: 1.0.0
+Version added: 1.1.9
 
 .. contents::
    :local:
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- This lookup returns a datetime string after adding or subtracting timedelta.
+- This lookup returns list of servers that are servicing specific url.
 
 
 
@@ -49,13 +49,34 @@ Parameters
                     <td>
                     </td>
                 <td>
-                        <div>Input date string</div>
+                        <div>url in form of https://my.url.com</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>delta</b>
+                    <b>adm_hostname</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"mas.myabcit.net"</div>
+                </td>
+                    <td>
+                            <div> ini entries:
+                                    <p>[url_to_backend]<br>adm_hostname = mas.myabcit.net</p>
+                            </div>
+                    </td>
+                <td>
+                        <div>Hostname of ADM</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>password</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -65,59 +86,31 @@ Parameters
                 <td>
                 </td>
                     <td>
-                            <div> ini entries:
-                                    <p>[timedelta_lookup]<br>delta = VALUE</p>
-                            </div>
+                                <div>env:ADM_PASSWORD</div>
                     </td>
                 <td>
-                        <div>Time delta string in form of &#x27;-1 day&#x27;</div>
-                        <div>First character should be sign &#x27;+&#x27; or &#x27;-&#x27;</div>
-                        <div>Amount should go after sign</div>
-                        <div>Units should follow the amount separated by space</div>
+                        <div>Password for user.</div>
+                        <div>If the value is not specified, the value of environment variable <code>ADM_PASSWORD</code> will be used instead.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>format</b>
+                    <b>username</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">"%Y-%m-%dT%H:%M:%S.%f%z"</div>
                 </td>
                     <td>
-                            <div> ini entries:
-                                    <p>[timedelta_lookup]<br>format = %Y-%m-%dT%H:%M:%S.%f%z</p>
-                            </div>
+                                <div>env:ADM_USERNAME</div>
                     </td>
                 <td>
-                        <div>Date format e.g. &#x27;%m-%d-%Y %H:%M:%S&#x27;</div>
-                        <div>Default data format is &#x27;%Y-%m-%dT%H:%M:%S.%f%z&#x27;</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>out_format</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">""</div>
-                </td>
-                    <td>
-                            <div> ini entries:
-                                    <p>[timedelta_lookup]<br>out_format = </p>
-                            </div>
-                    </td>
-                <td>
-                        <div>Date format e.g. &#x27;%m-%d-%Y %H:%M:%S&#x27;</div>
-                        <div>format is used for output format if this is not defined</div>
+                        <div>Name of user for connection to ADM.</div>
+                        <div>If the value is not specified, the value of environment variable <code>ADM_USERNAME</code> will be used instead.</div>
                 </td>
             </tr>
     </table>
@@ -156,11 +149,11 @@ Examples
       collections:
         - cencora.itoa
       vars:
-        input_date: "08-25-2023 05:57:37"
-        future_date: "{{ lookup('cencora.itoa.timedelta', input_date, delta='+16 days', format='%m-%d-%Y %H:%M:%S') }}"
+        input_url: "https://cencora.com/"
+        backend_servers: "{{ lookup('cencora.itoa.url_to_backend', input_url, username=username, password=password) }}"
       tasks:
         - debug:
-            msg: "16 days from {{ input }} will be {{ future_date }}"
+            msg: "Backend servers for {{ input_url }} are {{ backend_servers }}"
 
 
 
@@ -179,18 +172,19 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>date_string</b>
+                    <b>returned_value</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">string</span>
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>
                     </div>
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Date with timedelta applied</div>
+                            <div>List of server dictionaries</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">08-25-2023 05:57:37</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;servicegroupname&#x27;: &#x27;www.amerisourcebergen.com_default_sg&#x27;, &#x27;ip&#x27;: &#x27;20.0.0.0&#x27;, &#x27;port&#x27;: 8080, &#x27;svrstate&#x27;: &#x27;UP&#x27;, &#x27;statechangetimesec&#x27;: &#x27;Wed Sep 20 14:41:12 2023&#x27;, &#x27;tickssincelaststatechange&#x27;: &#x27;187440408&#x27;, &#x27;weight&#x27;: &#x27;1&#x27;, &#x27;servername&#x27;: &#x27;20.0.0.0&#x27;, &#x27;customserverid&#x27;: &#x27;None&#x27;, &#x27;serverid&#x27;: &#x27;0&#x27;, &#x27;state&#x27;: &#x27;ENABLED&#x27;, &#x27;hashid&#x27;: &#x27;0&#x27;, &#x27;graceful&#x27;: &#x27;NO&#x27;, &#x27;delay&#x27;: &#x27;0&#x27;, &#x27;delay1&#x27;: &#x27;0&#x27;, &#x27;nameserver&#x27;: &#x27;0.0.0.0&#x27;, &#x27;dbsttl&#x27;: &#x27;0&#x27;, &#x27;orderstr&#x27;: &#x27;Default&#x27;, &#x27;trofsdelay&#x27;: &#x27;0&#x27;}]</div>
                 </td>
             </tr>
     </table>
