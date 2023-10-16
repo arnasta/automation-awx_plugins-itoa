@@ -217,7 +217,7 @@ def eval_compound_advanced_expression(rule, hostname, path):
             expression += i
         previous_char = i
     if expression:
-        display.vvvv(f'Completing expression: "{expression}"')
+        display.vvvv(f'Completing expression: "{expression}". Operator: "{operator}"')
         if operator == 'or':
             result = bool(previous_test or eval_advanced_expression(expression, hostname, path))
         else:
