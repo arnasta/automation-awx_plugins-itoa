@@ -1,6 +1,6 @@
 # automation-awx_plugins-itoa
 
-*Collection version 1.1.8*
+*Collection version 1.1.9*
 
 ## Description
 
@@ -33,3 +33,5 @@ These are the plugins in the cencora.itoa collection:
 - [ldap_user](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.ldap_user_lookup.rst) – Get user info from LDAP
 
 - [ping](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.ping_lookup.rst) – ICMP ping module
+
+- [url_to_backend](https://github.com/abcorp-itops/automation-awx_plugins-itoa/blob/main/docs/cencora.itoa.url_to_backend_lookup.rst) – Resolve what backend servers are behind url
