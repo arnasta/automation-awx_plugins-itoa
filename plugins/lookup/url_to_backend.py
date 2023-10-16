@@ -145,7 +145,7 @@ def eval_advanced_expression(rule, hostname, path):
     element = first_part_split[0]
     test = first_part_split[1]
     ret = False
-    display.vvvv(f'Test: {element} {test} {eval_var}')
+    display.vvv(f'Test: {element} {test} {eval_var}')
     if element == 'hostname':
         if test == 'eq':
             ret = bool(hostname == eval_var)
@@ -174,15 +174,15 @@ def eval_compound_advanced_expression(rule, hostname, path):
     result = False
     for i in rule:
         if i in open_list:
-            display.vvvvv(f'Opening parenthesis found.')
+            display.vvvv(f'Opening parenthesis found.')
             open_count+=1
             if expression:
                 expression += i
         elif i in close_list:
-            display.vvvvv(f'Closing parenthesis found.')
+            display.vvvv(f'Closing parenthesis found.')
             open_count-=1
             if open_count == 0:
-                display.vvvvv(f'Top most closing parenthesis found. Expression: "{expression}"')
+                display.vvvv(f'Top most closing parenthesis found. Expression: "{expression}"')
                 if operator == 'or':
                     recursive_result = eval_compound_advanced_expression(expression, hostname, path)
                     result = bool(previous_test or recursive_result)
@@ -194,22 +194,22 @@ def eval_compound_advanced_expression(rule, hostname, path):
             else:
                 expression += i
         elif i in operator_list and previous_char == i and open_count == 0:
-            display.vvvvv(f'Full operator found "{i}{i}"')
+            display.vvvv(f'Full operator found "{i}{i}"')
             if i == '|':
                 operator == 'or'
             else:
                 operator == 'and'
         elif i in operator_list and open_count == 0:
-            display.vvvvv(f'Operator found "{i}"')
+            display.vvvv(f'Operator found "{i}"')
             if expression:
-                display.vvvvv(f'Completing expression: "{expression}"')
+                display.vvvv(f'Completing expression: "{expression}"')
                 if operator == 'or':
                     recursive_result = eval_compound_advanced_expression(expression, hostname, path)
-                    display.vvvvv(f'Recursive result: {recursive_result}')
+                    display.vvvv(f'Recursive result: {recursive_result}')
                     result = bool(previous_test or recursive_result)
                 else:
                     recursive_result = eval_compound_advanced_expression(expression, hostname, path)
-                    display.vvvvv(f'Recursive result: {recursive_result}')
+                    display.vvvv(f'Recursive result: {recursive_result}')
                     result = bool(previous_test and recursive_result)
                 previous_test = result
                 expression =  ''
@@ -217,14 +217,14 @@ def eval_compound_advanced_expression(rule, hostname, path):
             expression += i
         previous_char = i
     if expression:
-        display.vvvvv(f'Completing expression: "{expression}"')
+        display.vvvv(f'Completing expression: "{expression}"')
         if operator == 'or':
             result = bool(previous_test or eval_advanced_expression(expression, hostname, path))
         else:
             result = bool(previous_test and eval_advanced_expression(expression, hostname, path))
         previous_test = result
         expression =  ''
-    display.vvvvv(f'Returning result: {result}')
+    display.vvvv(f'Returning result: {result}')
     return result
 
 def policy_match(url, rule):
