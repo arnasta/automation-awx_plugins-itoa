@@ -232,7 +232,7 @@ def policy_match(url, rule):
     rule = rule.lower()
     url_split = url.replace('https://','').replace('http://','').split("/")
     hostname = url_split[0]
-    if len(url_split) > 1 and url_split[-1] != '/':
+    if len(url_split) > 1 and url_split[-1]:
         path = '/' + '/'.join(url_split[1:])
     else:
         path = ''
