@@ -270,7 +270,7 @@ class LookupModule(LookupBase):
     def run(self, terms, variables=None, **kwargs):
         self.set_options(var_options=variables, direct=kwargs)
         adm_hostname = 'https://' + self.get_option('adm_hostname')
-        adc_domain = '.'.join(self.get_option('adm_hostname').split('.')[:-2])
+        adc_domain = '.'.join(self.get_option('adm_hostname').split('.')[-2:])
         username = self.get_option('username')
         password = self.get_option('password')
         auth = HTTPBasicAuth(username, password)
