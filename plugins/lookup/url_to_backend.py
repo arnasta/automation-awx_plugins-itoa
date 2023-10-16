@@ -132,7 +132,7 @@ def resolve_ip(hostname, nameserver=''):
 
 def api_call(url, auth):
     display.vv(f"Fetching info from {url}")
-    response = requests.get(url, auth=auth, verify=False)
+    response = requests.get(url, auth=auth)
     display.vvv(f"Response status code {str(response.status_code)}")
     if response.status_code != 200:
         raise AnsibleError(f"http error : {response.status_code}: {response.text}")
