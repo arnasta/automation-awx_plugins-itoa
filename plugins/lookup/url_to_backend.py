@@ -196,11 +196,9 @@ def eval_compound_advanced_expression(rule, hostname, path):
         elif i in operator_list and previous_char == i and open_count == 0:
             display.vvvv(f'Full operator found "{i}{i}"')
             if i == '|':
-                display.vvvv(f'Setting operator to "or"')
-                operator == 'or'
+                operator = 'or'
             else:
-                display.vvvv(f'Setting operator to "and"')
-                operator == 'and'
+                operator = 'and'
         elif i in operator_list and open_count == 0:
             display.vvvv(f'Operator found "{i}"')
             if expression:
