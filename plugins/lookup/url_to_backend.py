@@ -117,6 +117,7 @@ def resolve_ip(hostname):
     try:
         answer = resolver.query(hostname)
         ips = [ip.to_text() for ip in answer]
+        display.v(f"Hostname {hostname} resolved to: {','.join(ips)}")
         return ips
     except Exception as e:
         display.v(f"Error resolving {hostname}: {e}")
