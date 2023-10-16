@@ -113,15 +113,22 @@ adc_service_endpoint = api_path + 'service'
 adc_servicegroup_servicegroupmember_binding_endpoint = api_path + 'servicegroup_servicegroupmember_binding'
 adc_server_endpoint = api_path + 'server'
 
-def resolve_ip(hostname):
+def resolve_ip(hostname, nameserver=''):
+    ret = []
+    res = resolver.Resolver()
+    if nameserver:
+        display.v(f"Trying to resolve {hostname} using: {nameserver} server")
+        res.nameservers = [nameserver]
     try:
-        answer = resolver.query(hostname)
+        answer = res.query(hostname)
         ips = [ip.to_text() for ip in answer]
         display.v(f"Hostname {hostname} resolved to: {','.join(ips)}")
-        return ips
+        ret = ips
     except Exception as e:
         display.v(f"Error resolving {hostname}: {e}")
-        return []
+        if not nameserver:
+            ret = resolve_ip(hostname, '8.8.8.8')
+    return ret
 
 def api_call(url, auth):
     display.vv(f"Fetching info from {url}")
