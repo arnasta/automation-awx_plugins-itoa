@@ -243,7 +243,11 @@ def policy_match(url, rule):
     if 'req.http' in rule: # classic policy expression
         display.vvv(f"Classic policy expression: {rule} detected. Converting to advanced.")
         rule = convert_to_advanced_expression(rule)
-    rule = rule.replace('("','[').replace('")',']').replace(' ','').replace('url.path','url')
+    rule = rule.replace('("','[') # replacing parenthesis with brackets for better code control
+    rule = rule.replace('")',']') # replacing parenthesis with brackets for better code control
+    rule = rule.replace(' ','') # removing spaces
+    rule = rule.replace('url.path','url') # there are url.path and url clauses so replacing url.path with url
+    rule = rule.replace('set_text_mode(ignorecase).','') # remove set_text_mode(ignorecase) since lower is used
     display.vvv(f"Final optimized rule: '{rule}'")
     try:
         result = eval_compound_advanced_expression(rule, hostname, path)
