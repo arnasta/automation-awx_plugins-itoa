@@ -130,7 +130,7 @@ class LookupModule(LookupBase):
                     lb_vservers = api_call(adm_hostname + adm_lbvservers_endpoint + '?filter=vsvr_ip_address:' + str(ip_address) + ',vsvr_type:' + protocol, auth).get('ns_lbvserver', [])
                     vserver = next(iter(lb_vservers), '')
                 if vserver:
-                    ret_list.append({'name': vserver['name'], 'type': protocol, 'load_balancer': vserver['hostname'] + '.' + adc_domain, 'ip': str(ip_address)})
+                    ret_list.append({'name': vserver['name'], 'type': protocol, 'load_balancer': vserver['hostname'] + '.' + adc_domain, 'ip_address': str(ip_address)})
                 else:
                     display.vv(f"No lb or cs vservers found on ADM")
                 ret.append(ret_list)
