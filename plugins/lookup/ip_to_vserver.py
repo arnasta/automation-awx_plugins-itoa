@@ -79,7 +79,7 @@ returned_value:
   elements: dict
   sample:
     - name: "www.amerisourcebergen.com-443_cs"
-      type: "SSL"
+      type: "cs"
       load_balancer:"LADC-PFE02.myabcit.net"
       ip_address: "209.182.164.44"
 """
