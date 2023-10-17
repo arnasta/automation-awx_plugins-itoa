@@ -291,7 +291,7 @@ class LookupModule(LookupBase):
                     target_lbvserver = lb_vserver['name']
                 else:
                     cs_vserver = api_call('https://' + adc_hostname + adc_csvserver_endpoint + '/' + term, auth)['csvserver'][0]
-                    target_lbvserver = cs_vserver['targetlbvserver']
+                    target_lbvserver = cs_vserver['lbvserver']
                     csvserver_policies = api_call('https://' + adc_hostname + adc_csvserver_cspolicy_binding_endpoint + '/' + term, auth).get('csvserver_cspolicy_binding', [])
                     sorted_policies = sorted(csvserver_policies, key=lambda x: int(x['priority']))
                     for policy in sorted_policies:
@@ -304,7 +304,7 @@ class LookupModule(LookupBase):
                         display.vvv(f"Evaluating policy: {policy['policyname']}")
                         if policy_match(url, policy_rule):
                             target_lbvserver = policy['targetlbvserver']
-                            display.vv(f"Found matching policy. Target loadbalancer {policy['targetlbvserver']}")
+                            display.vv(f"Found matching policy. Target loadbalancer {target_lbvserver}")
                             break
                 service_bindings = api_call('https://' + adc_hostname + adc_lbvserver_service_binding_endpoint + '/'  + target_lbvserver, auth).get('lbvserver_service_binding', [])
                 for service_binding in service_bindings:
