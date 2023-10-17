@@ -22,6 +22,7 @@ DOCUMENTATION = r"""
       description:
         - Url of content packet
         - It is used to evaluate Content Switch policies
+        - e.g. http://example.com/, https://example.com/path
       required: true
       type: string
       ini:
@@ -40,7 +41,9 @@ DOCUMENTATION = r"""
         - can be 'lb' or 'cs'
       required: true
       type: string
-      choices  = ['lb', 'cs']
+      choices:
+        - lb
+        - cs
     username:
       description:
         - Name of user for connection to ADM.
