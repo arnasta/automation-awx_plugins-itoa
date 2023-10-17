@@ -83,33 +83,6 @@ collections:
         msg: "Backend servers for {{ input_url }} are {{ backend_servers }}"
 """
 
-RETURN = r"""
-returned_value:
-  description: List of server dictionaries
-  returned: always
-  type: list
-  elements: dict
-  sample:
-    - servicegroupname: "www.amerisourcebergen.com_default_sg"
-      ip: "20.0.0.0"
-      port: 8080
-      svrstate: "UP"
-      statechangetimesec: "Wed Sep 20 14:41:12 2023"
-      tickssincelaststatechange: "187440408"
-      weight: "1"
-      servername: "20.0.0.0"
-      customserverid: "None"
-      serverid: "0"
-      state: "ENABLED"
-      hashid: "0"
-      graceful: "NO"
-      delay: "0"
-      delay1: "0"
-      nameserver: "0.0.0.0"
-      dbsttl: "0"
-      orderstr: "Default"
-      trofsdelay: "0"
-"""
 
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.lookup import LookupBase
