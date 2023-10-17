@@ -273,7 +273,7 @@ def policy_match(url, rule):
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, **kwargs):
         self.set_options(var_options=variables, direct=kwargs)
-        adc_hostname = 'https://' + self.get_option('adc_hostname')
+        adc_hostname = self.get_option('adc_hostname')
         url = self.get_option('url')
         vserver_type = self.get_option('vserver_type')
         username = self.get_option('username')
