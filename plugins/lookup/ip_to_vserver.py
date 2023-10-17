@@ -125,12 +125,14 @@ class LookupModule(LookupBase):
                     display.v(f'IP address is invalid: {term}')
                 ret_list = []
                 cs_vservers = api_call(adm_hostname + adm_csvservers_endpoint + '?filter=vsvr_ip_address:' + str(ip_address) + ',vsvr_type:' + protocol, auth).get('ns_csvserver', [])
+                vserver_type = 'cs'
                 vserver = next(iter(cs_vservers), '')
                 if not vserver:
                     lb_vservers = api_call(adm_hostname + adm_lbvservers_endpoint + '?filter=vsvr_ip_address:' + str(ip_address) + ',vsvr_type:' + protocol, auth).get('ns_lbvserver', [])
                     vserver = next(iter(lb_vservers), '')
+                    vserver_type = 'lb'
                 if vserver:
-                    ret_list.append({'name': vserver['name'], 'type': protocol, 'load_balancer': vserver['hostname'] + '.' + adc_domain, 'ip_address': str(ip_address)})
+                    ret_list.append({'name': vserver['name'], 'type': vserver_type, 'load_balancer': vserver['hostname'] + '.' + adc_domain, 'ip_address': str(ip_address)})
                 else:
                     display.vv(f"No lb or cs vservers found on ADM")
                 ret.append(ret_list)
