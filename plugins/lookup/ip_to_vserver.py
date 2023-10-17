@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-  name: ip_to_adc
+  name: ip_to_vserver
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
   version_added: 1.1.9
   short_description: This plugin resolves what NetScaler Application Delivery Controllers are servicing url
@@ -23,7 +23,7 @@ DOCUMENTATION = r"""
       default: 'mas.myabcit.net'
       type: string
       ini:
-        - section: ip_to_adc
+        - section: ip_to_vserver
           key: adm_hostname
     username:
       description:
@@ -46,7 +46,7 @@ DOCUMENTATION = r"""
       default: 'SSL'
       type: string
       ini:
-        - section: ip_to_adc
+        - section: ip_to_vserver
           key: protocol
 """
 
@@ -65,38 +65,22 @@ collections:
     - cencora.itoa
   vars:
     input_url: "https://cencora.com/"
-    load_balancers: "{{ lookup('cencora.itoa.ip_to_adc', input_url, username=username, password=password) }}"
+    vservers: "{{ lookup('cencora.itoa.ip_to_vserver', input_url, username=username, password=password) }}"
   tasks:
     - debug:
-        msg: "NetScaler proxies for {{ input_url }} are {{ load_balancers }}"
+        msg: "vservers for {{ input_url }} are {{ vservers }}"
 """
 
 RETURN = r"""
 returned_value:
-  description: List of NetScaler proxy dictionaries
+  description: List of vserver objects in NetScaler
   returned: always
   type: list
   elements: dict
   sample:
-    - servicegroupname: "www.amerisourcebergen.com_default_sg"
-      ip: "20.0.0.0"
-      port: 8080
-      svrstate: "UP"
-      statechangetimesec: "Wed Sep 20 14:41:12 2023"
-      tickssincelaststatechange: "187440408"
-      weight: "1"
-      servername: "20.0.0.0"
-      customserverid: "None"
-      serverid: "0"
-      state: "ENABLED"
-      hashid: "0"
-      graceful: "NO"
-      delay: "0"
-      delay1: "0"
-      nameserver: "0.0.0.0"
-      dbsttl: "0"
-      orderstr: "Default"
-      trofsdelay: "0"
+    - name: "www.amerisourcebergen.com-443_cs"
+      type: "SSL"
+      load_balancer:"LADC-PFE02.myabcit.net"
 """
 
 from ansible.errors import AnsibleError, AnsibleParserError
@@ -131,40 +115,24 @@ class LookupModule(LookupBase):
         auth = HTTPBasicAuth(username, password)
         ret = []
         for term in terms:
-            display.v("ip_to_adc lookup term: %s" % term)
+            display.v("ip_to_vserver lookup term: %s" % term)
             if isinstance(term, str):
                 try:
                     ip_address = ipaddress.ip_address(term)
                     display.v(f'{ip_address} is a correct IP{ip_address.version} address.')
                 except ValueError:
-                    display.v(f'address/netmask is invalid: {term}')
-                load_balancers = []
-                load_balancers_dict = {}
-                lb_vservers = api_call(adm_hostname + adm_lbvservers_endpoint + '?filter=vsvr_ip_address:' + str(ip_address) + ',vsvr_type:' + protocol, auth).get('ns_lbvserver', [])
+                    display.v(f'IP address is invalid: {term}')
+                ret_list = []
                 cs_vservers = api_call(adm_hostname + adm_csvservers_endpoint + '?filter=vsvr_ip_address:' + str(ip_address) + ',vsvr_type:' + protocol, auth).get('ns_csvserver', [])
-                if not cs_vservers and not lb_vservers:
+                vserver = next(iter(cs_vservers), '')
+                if not vserver:
+                    lb_vservers = api_call(adm_hostname + adm_lbvservers_endpoint + '?filter=vsvr_ip_address:' + str(ip_address) + ',vsvr_type:' + protocol, auth).get('ns_lbvserver', [])
+                    vserver = next(iter(lb_vservers), '')
+                if vserver:
+                    ret_list.append({'name': vserver['name'], 'type': protocol, 'load_balancer': vserver['hostname'] + '.' + adc_domain})
+                else:
                     display.vv(f"No lb or cs vservers found on ADM")
-                for lb_vserver in lb_vservers:
-                    lb_hostname = lb_vserver['hostname'] +'.' + adc_domain
-                    if lb_hostname in load_balancers_dict:
-                        load_balancer = load_balancers_dict[lb_hostname]
-                        load_balancer['lb_vservers'].append(lb_vserver['name'])
-                    else:
-                        load_balancer = {'lb_vservers': [lb_vserver['name']]}
-                        load_balancers_dict[lb_hostname] = load_balancer
-                for cs_vserver in cs_vservers:
-                    lb_hostname = cs_vserver['hostname'] +'.' + adc_domain
-                    if lb_hostname in load_balancers_dict:
-                        load_balancer = load_balancers_dict[lb_hostname]
-                        load_balancer['cs_vservers'].append(cs_vserver['name'])
-                    else:
-                        load_balancer = {'cs_vservers': [cs_vserver['name']]}
-                        load_balancers_dict[lb_hostname] = load_balancer
-                for load_balancer, lb_dict in load_balancers_dict.items():
-                    lb_dict_copy = lb_dict.copy()
-                    lb_dict_copy['name'] = load_balancer
-                    load_balancers.append(lb_dict_copy)
-                ret.append(load_balancers)
+                ret.append(ret_list)
             else:
                 raise AnsibleError(f"Input should be a string not '{type(term)}'")
         return ret
