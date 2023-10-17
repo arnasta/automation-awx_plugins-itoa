@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-  name: resolve_adc
+  name: url_to_adc
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
   version_added: 1.1.9
   short_description: This plugin resolves what NetScaler Application Delivery Controllers are servicing url
@@ -23,7 +23,7 @@ DOCUMENTATION = r"""
       default: 'mas.myabcit.net'
       type: string
       ini:
-        - section: resolve_adc
+        - section: url_to_adc
           key: adm_hostname
     username:
       description:
@@ -58,7 +58,7 @@ collections:
     - cencora.itoa
   vars:
     input_url: "https://cencora.com/"
-    ns_proxies: "{{ lookup('cencora.itoa.resolve_adc', input_url, username=username, password=password) }}"
+    ns_proxies: "{{ lookup('cencora.itoa.url_to_adc', input_url, username=username, password=password) }}"
   tasks:
     - debug:
         msg: "NetScaler proxies for {{ input_url }} are {{ ns_proxies }}"
@@ -141,7 +141,7 @@ class LookupModule(LookupBase):
         auth = HTTPBasicAuth(username, password)
         ret = []
         for term in terms:
-            display.v("resolve_adc lookup term: %s" % term)
+            display.v("url_to_adc lookup term: %s" % term)
             if isinstance(term, str):
                 ns_proxies = {}
                 if term.lower().startswith('https://'):
