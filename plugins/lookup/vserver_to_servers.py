@@ -22,7 +22,6 @@ DOCUMENTATION = r"""
       description:
         - Url of content packet
         - It is used to evaluate Content Switch policies
-        - e.g. http://example.com/, https://example.com/path
       required: true
       type: string
       ini:
@@ -60,7 +59,28 @@ DOCUMENTATION = r"""
         - name: ADM_PASSWORD
 """
 
-
+EXAMPLES = r"""
+---
+collections:
+  - name: cencora.itoa
+    type: git
+    source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
+    version: 1.1.10
+---
+- hosts: localhost
+  connection: local
+  gather_facts: true
+  collections:
+    - cencora.itoa
+  vars:
+    adc_hostname: "LADC-PFE02.myabcit.net"
+    vserver: "www.amerisourcebergen.com-443_cs"
+    vserver_type: "cs"
+    backend_servers: "{{ lookup('cencora.itoa.vserver_to_servers', vserver, adc_hostname=adc_hostname, vserver_type=vserver_type, username=username, password=password) }}"
+  tasks:
+    - debug:
+        msg: "Backend servers for {{ input_url }} are {{ backend_servers }}"
+"""
 
 RETURN = r"""
 returned_value:
