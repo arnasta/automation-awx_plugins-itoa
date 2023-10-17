@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-  name: url_to_backend
+  name: resolve_backend
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
   version_added: 1.1.9
   short_description: This plugin resolves what backend server(s) are behind url
@@ -23,7 +23,7 @@ DOCUMENTATION = r"""
       default: 'mas.myabcit.net'
       type: string
       ini:
-        - section: url_to_backend
+        - section: resolve_backend
           key: adm_hostname
     username:
       description:
@@ -58,7 +58,7 @@ collections:
     - cencora.itoa
   vars:
     input_url: "https://cencora.com/"
-    backend_servers: "{{ lookup('cencora.itoa.url_to_backend', input_url, username=username, password=password) }}"
+    backend_servers: "{{ lookup('cencora.itoa.resolve_backend', input_url, username=username, password=password) }}"
   tasks:
     - debug:
         msg: "Backend servers for {{ input_url }} are {{ backend_servers }}"
@@ -276,7 +276,7 @@ class LookupModule(LookupBase):
         auth = HTTPBasicAuth(username, password)
         ret = []
         for term in terms:
-            display.v("url_to_backend lookup term: %s" % term)
+            display.v("resolve_backend lookup term: %s" % term)
             if isinstance(term, str):
                 target_servers = []
                 if term.lower().startswith('https://'):

@@ -3,10 +3,10 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-  name: url_to_backend
+  name: resolve_adc
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
   version_added: 1.1.9
-  short_description: This plugin resolves what NetScaler ADC are servicing url
+  short_description: This plugin resolves what NetScaler Application Delivery Controllers are servicing url
   description:
       - This lookup returns list of NetScaler devices and associated vservers.
   notes:
@@ -23,7 +23,7 @@ DOCUMENTATION = r"""
       default: 'mas.myabcit.net'
       type: string
       ini:
-        - section: url_to_backend
+        - section: resolve_adc
           key: adm_hostname
     username:
       description:
@@ -58,7 +58,7 @@ collections:
     - cencora.itoa
   vars:
     input_url: "https://cencora.com/"
-    ns_proxies: "{{ lookup('cencora.itoa.resolve_ns_proxy', input_url, username=username, password=password) }}"
+    ns_proxies: "{{ lookup('cencora.itoa.resolve_adc', input_url, username=username, password=password) }}"
   tasks:
     - debug:
         msg: "NetScaler proxies for {{ input_url }} are {{ ns_proxies }}"
@@ -141,7 +141,7 @@ class LookupModule(LookupBase):
         auth = HTTPBasicAuth(username, password)
         ret = []
         for term in terms:
-            display.v("url_to_backend lookup term: %s" % term)
+            display.v("resolve_adc lookup term: %s" % term)
             if isinstance(term, str):
                 ns_proxies = {}
                 if term.lower().startswith('https://'):
@@ -153,24 +153,25 @@ class LookupModule(LookupBase):
                 hostname = term.replace('https://','').replace('http://','').split("/")[0]
                 ip_addresses = resolve_ip(hostname)
                 for ip_address in ip_addresses:
+                    ns_proxies[ip_address] = {}
                     lb_vservers = api_call(adm_hostname + adm_lbvservers_endpoint + '?filter=vsvr_ip_address:' + ip_address + ',vsvr_type:' + protocol, auth).get('ns_lbvserver', [])
                     cs_vservers = api_call(adm_hostname + adm_csvservers_endpoint + '?filter=vsvr_ip_address:' + ip_address + ',vsvr_type:' + protocol, auth).get('ns_csvserver', [])
                     if not cs_vservers and not lb_vservers:
                         display.vv(f"No lb or cs vservers found on ADM")
                     for lb_vserver in lb_vservers:
-                        if lb_vserver['hostname'] in ns_proxies:
-                            ns_proxy = ns_proxies[lb_vserver['hostname']]
+                        if lb_vserver['hostname'] in ns_proxies[ip_address]:
+                            ns_proxy = ns_proxies[ip_address][lb_vserver['hostname']]
                             ns_proxy['lb_vservers'].append(lb_vserver['name'])
                         else:
                             ns_proxy = {'lb_vservers': [lb_vserver['name']]}
-                            ns_proxies[lb_vserver['hostname']] = ns_proxy
+                            ns_proxies[ip_address][lb_vserver['hostname']] = ns_proxy
                     for cs_vserver in cs_vservers:
-                        if cs_vserver['hostname'] in ns_proxies:
-                            ns_proxy = ns_proxies[cs_vserver['hostname']]
+                        if cs_vserver['hostname'] in ns_proxies[ip_address]:
+                            ns_proxy = ns_proxies[ip_address][cs_vserver['hostname']]
                             ns_proxy['cs_vservers'].append(cs_vserver['name'])
                         else:
                             ns_proxy = {'cs_vservers': [cs_vserver['name']]}
-                            ns_proxies[cs_vserver['hostname']] = ns_proxy
+                            ns_proxies[ip_address][cs_vserver['hostname']] = ns_proxy
                 ret.append(ns_proxies)
             else:
                 raise AnsibleError(f"Input should be a string not '{type(term)}'")
