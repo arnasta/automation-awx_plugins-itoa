@@ -3,12 +3,12 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-  name: netscaler_adm_ip_to_vserver
+  name: netscaler_adm_vserver_from_ip
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
   version_added: 1.1.9
-  short_description: This plugin resolves what NetScaler Application Delivery Controllers are servicing url
+  short_description: This plugin queries NetScaler ADM for vservers  by IP and protocol
   description:
-      - This lookup returns list of NetScaler devices and associated vservers.
+      - This lookup returns list of vservers that have IP address and protocol provided.
   notes:
       - This module is part of the cencora.itoa collection (version 1.1.10).
       - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git).
@@ -23,7 +23,7 @@ DOCUMENTATION = r"""
       default: 'mas.myabcit.net'
       type: string
       ini:
-        - section: netscaler_adm_ip_to_vserver
+        - section: netscaler_adm_vserver_from_ip
           key: adm_hostname
     username:
       description:
@@ -46,7 +46,7 @@ DOCUMENTATION = r"""
       default: 'SSL'
       type: string
       ini:
-        - section: netscaler_adm_ip_to_vserver
+        - section: netscaler_adm_vserver_from_ip
           key: protocol
 """
 
@@ -65,7 +65,7 @@ collections:
     - cencora.itoa
   vars:
     input_url: "https://cencora.com/"
-    vservers: "{{ lookup('cencora.itoa.netscaler_adm_ip_to_vserver', input_url, username=username, password=password) }}"
+    vservers: "{{ lookup('cencora.itoa.netscaler_adm_vserver_from_ip', input_url, username=username, password=password) }}"
   tasks:
     - debug:
         msg: "vservers for {{ input_url }} are {{ vservers }}"
@@ -116,7 +116,7 @@ class LookupModule(LookupBase):
         auth = HTTPBasicAuth(username, password)
         ret = []
         for term in terms:
-            display.v("netscaler_adm_ip_to_vserver lookup term: %s" % term)
+            display.v("netscaler_adm_vserver_from_ip lookup term: %s" % term)
             if isinstance(term, str):
                 try:
                     ip_address = ipaddress.ip_address(term)

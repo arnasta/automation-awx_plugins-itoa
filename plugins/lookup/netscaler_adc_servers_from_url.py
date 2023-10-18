@@ -3,12 +3,12 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-  name: netscaler_adc_vserver_to_servers
+  name: netscaler_adc_servers_from_url
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
   version_added: 1.1.9
-  short_description: This plugin resolves what backend server(s) are behind vserver
+  short_description: This plugin resolves what backend server(s) are behind url
   description:
-      - This lookup returns list of servers that hit specific vserver in NetScaler.
+      - This lookup returns list of servers that are servicing specific url.
   notes:
       - This module is part of the cencora.itoa collection (version 1.1.9).
       - To install it, use C(ansible-galaxy collection install git+https://github.com/abcorp-itops/automation-awx_plugins-itoa.git).
@@ -16,34 +16,15 @@ DOCUMENTATION = r"""
         contains this content
   options:
     _terms:
-      description: vserver name as appears in ADC
+      description: url in form of https://my.url.com
       required: True
-    url:
-      description:
-        - Url of content packet
-        - It is used to evaluate Content Switch policies
-        - e.g. http://example.com/, https://example.com/path
-      required: true
+    adm_hostname:
+      description: Hostname of ADM
+      default: 'mas.myabcit.net'
       type: string
       ini:
-        - section: netscaler_adc_vserver_to_servers
-          key: url
-    adc_hostname:
-      description: Hostname of ADC
-      required: true
-      type: string
-      ini:
-        - section: netscaler_adc_vserver_to_servers
-          key: adc_hostname
-    vserver_type:
-      description:
-        - vserver type in ADC
-        - can be 'lb' or 'cs'
-      required: true
-      type: string
-      choices:
-        - lb
-        - cs
+        - section: netscaler_adc_servers_from_url
+          key: adm_hostname
     username:
       description:
         - Name of user for connection to ADM.
@@ -68,7 +49,7 @@ collections:
   - name: cencora.itoa
     type: git
     source: https://github.com/abcorp-itops/automation-awx_plugins-itoa
-    version: 1.1.10
+    version: 1.1.9
 ---
 - hosts: localhost
   connection: local
@@ -76,10 +57,8 @@ collections:
   collections:
     - cencora.itoa
   vars:
-    adc_hostname: "LADC-PFE02.myabcit.net"
-    vserver: "www.amerisourcebergen.com-443_cs"
-    vserver_type: "cs"
-    backend_servers: "{{ lookup('cencora.itoa.netscaler_adc_vserver_to_servers', vserver, adc_hostname=adc_hostname, vserver_type=vserver_type, username=username, password=password) }}"
+    input_url: "https://cencora.com/"
+    backend_servers: "{{ lookup('cencora.itoa.netscaler_adc_servers_from_url', input_url, username=username, password=password) }}"
   tasks:
     - debug:
         msg: "Backend servers for {{ input_url }} are {{ backend_servers }}"
@@ -124,8 +103,8 @@ from dns import resolver
 display = Display()
 
 api_path = '/nitro/v1/config/'
-adc_lbvserver_endpoint = api_path+ 'lbvserver'
-adc_csvserver_endpoint = api_path + 'csvserver'
+adm_lbvservers_endpoint = api_path + 'ns_lbvserver'
+adm_csvservers_endpoint = api_path + 'ns_csvserver'
 adc_csvserver_cspolicy_binding_endpoint = api_path + 'csvserver_cspolicy_binding'
 adc_lbvserver_service_binding_endpoint = api_path + 'lbvserver_service_binding'
 adc_lbvserver_servicegroup_binding_endpoint = api_path+ 'lbvserver_servicegroup_binding'
@@ -133,6 +112,23 @@ adc_cspolicy_endpoint = api_path + 'cspolicy'
 adc_service_endpoint = api_path + 'service'
 adc_servicegroup_servicegroupmember_binding_endpoint = api_path + 'servicegroup_servicegroupmember_binding'
 adc_server_endpoint = api_path + 'server'
+
+def resolve_ip(hostname, nameserver=''):
+    ret = []
+    res = resolver.Resolver()
+    if nameserver:
+        display.v(f"Trying to resolve {hostname} using: {nameserver} server")
+        res.nameservers = [nameserver]
+    try:
+        answer = res.query(hostname)
+        ips = [ip.to_text() for ip in answer]
+        display.v(f"Hostname {hostname} resolved to: {','.join(ips)}")
+        ret = ips
+    except Exception as e:
+        display.v(f"Error resolving {hostname}: {e}")
+        if not nameserver:
+            ret = resolve_ip(hostname, '8.8.8.8')
+    return ret
 
 def api_call(url, auth):
     display.vv(f"Fetching info from {url}")
@@ -273,53 +269,69 @@ def policy_match(url, rule):
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, **kwargs):
         self.set_options(var_options=variables, direct=kwargs)
-        adc_hostname = self.get_option('adc_hostname')
-        url = self.get_option('url')
-        vserver_type = self.get_option('vserver_type')
+        adm_hostname = 'https://' + self.get_option('adm_hostname')
+        adc_domain = '.'.join(self.get_option('adm_hostname').split('.')[-2:])
         username = self.get_option('username')
         password = self.get_option('password')
         auth = HTTPBasicAuth(username, password)
         ret = []
         for term in terms:
-            display.v("Looking up servers for vserver: %s" % term)
+            display.v("netscaler_adc_servers_from_url lookup term: %s" % term)
             if isinstance(term, str):
                 target_servers = []
-                if not (url.lower().startswith('https://') or url.lower().startswith('http://')):
-                    raise AnsibleError(f"URL should start with 'http://' or 'https://'")
-                if vserver_type == 'lb':
-                    lb_vserver = api_call('https://' + adc_hostname + adc_lbvserver_endpoint + '/' + term, auth)['lbvserver'][0]
-                    target_lbvserver = lb_vserver['name']
+                if term.lower().startswith('https://'):
+                    protocol = 'SSL'
+                elif term.lower().startswith('http://'):
+                    protocol = 'HTTP'
                 else:
-                    cs_vserver = api_call('https://' + adc_hostname + adc_csvserver_endpoint + '/' + term, auth)['csvserver'][0]
-                    target_lbvserver = cs_vserver['lbvserver']
-                    csvserver_policies = api_call('https://' + adc_hostname + adc_csvserver_cspolicy_binding_endpoint + '/' + term, auth).get('csvserver_cspolicy_binding', [])
-                    sorted_policies = sorted(csvserver_policies, key=lambda x: int(x['priority']))
-                    for policy in sorted_policies:
-                        policy_rule = policy.get('rule', '')
-                        if not policy_rule:
-                            display.vvv(f"Policy rule not found for {policy['policyname']} doing extra API call")
-                            cspolicy = api_call('https://' + adc_hostname + adc_cspolicy_endpoint + '/' + policy['policyname'], auth).get('cspolicy', [])
-                            if cspolicy:
-                                policy_rule = cspolicy[0].get('rule', '')
-                        display.vvv(f"Evaluating policy: {policy['policyname']}")
-                        if policy_match(url, policy_rule):
-                            target_lbvserver = policy['targetlbvserver']
-                            display.vv(f"Found matching policy. Target loadbalancer {target_lbvserver}")
-                            break
-                service_bindings = api_call('https://' + adc_hostname + adc_lbvserver_service_binding_endpoint + '/'  + target_lbvserver, auth).get('lbvserver_service_binding', [])
-                for service_binding in service_bindings:
-                    services = api_call('https://' + adc_hostname + adc_service_endpoint + '/'  + service_binding['servicename'], auth).get('service', [])
-                    for service in services:
-                        servers = api_call('https://' + adc_hostname + adc_server_endpoint + '/'  + service['servername'], auth).get('server', [])
-                        for server in servers:
-                            target_servers.append(server)
-                servicegroup_bindings = api_call('https://' + adc_hostname + adc_lbvserver_servicegroup_binding_endpoint + '/'  + target_lbvserver, auth).get('lbvserver_servicegroup_binding', [])
-                for servicegroup_binding in servicegroup_bindings:
-                    servicegroup_members = api_call('https://' + adc_hostname + adc_servicegroup_servicegroupmember_binding_endpoint + '/'  + servicegroup_binding['servicename'], auth).get('servicegroup_servicegroupmember_binding', [])
-                    for servicegroup_member in servicegroup_members:
-                        servers = api_call('https://' + adc_hostname + adc_server_endpoint + '/'  + servicegroup_member['servername'], auth).get('server', [])
-                        for server in servers:
-                            target_servers.append(server)
+                    raise AnsibleError(f"URL should start with 'http://' or 'https://'")
+                hostname = term.replace('https://','').replace('http://','').split("/")[0]
+                ip_addresses = resolve_ip(hostname)
+                for ip_address in ip_addresses:
+                    lb_vservers = api_call(adm_hostname + adm_lbvservers_endpoint + '?filter=vsvr_ip_address:' + ip_address + ',vsvr_type:' + protocol, auth).get('ns_lbvserver', [])
+                    cs_vservers = api_call(adm_hostname + adm_csvservers_endpoint + '?filter=vsvr_ip_address:' + ip_address + ',vsvr_type:' + protocol, auth).get('ns_csvserver', [])
+                    targetlbvservers = []
+                    if not cs_vservers and not lb_vservers:
+                        display.vv(f"No lb or cs vservers found on ADM")
+                    for lb_vserver in lb_vservers:
+                        targetlbvservers.append({'ns_ip_address': lb_vserver['ns_ip_address'], 'name': lb_vserver['name'], 'hostname': lb_vserver['hostname'] + '.' + adc_domain})
+                    for cs_vserver in cs_vservers:
+                        ns_hostname = cs_vserver['hostname'] + '.' + adc_domain
+                        ns_ip_address = cs_vserver['ns_ip_address']
+                        cs_vserver_name = cs_vserver['name']
+                        targetlbvserver = cs_vserver['targetlbvserver']
+                        csvserver_policies = api_call('https://' + ns_hostname + adc_csvserver_cspolicy_binding_endpoint + '/' + cs_vserver_name, auth).get('csvserver_cspolicy_binding', [])
+                        sorted_policies = sorted(csvserver_policies, key=lambda x: int(x['priority']))
+                        for policy in sorted_policies:
+                            policy_rule = policy.get('rule', '')
+                            if not policy_rule:
+                                display.vvv(f"Policy rule not found for {policy['policyname']} doing extra API call")
+                                cspolicy = api_call('https://' + ns_hostname + adc_cspolicy_endpoint + '/' + policy['policyname'], auth).get('cspolicy', [])
+                                if cspolicy:
+                                    policy_rule = cspolicy[0].get('rule', '')
+                            display.vvv(f"Evaluating policy: {policy['policyname']}")
+                            if policy_match(term, policy_rule):
+                                targetlbvserver = policy['targetlbvserver']
+                                display.vv(f"Found matching policy. Target loadbalancer {policy['targetlbvserver']}")
+                                break
+                        targetlbvservers.append({'ns_ip_address': ns_ip_address, 'name': targetlbvserver, 'hostname': ns_hostname})
+                    for targetlbvserver in targetlbvservers:
+                        if not targetlbvserver['name']:
+                            continue
+                        service_bindings = api_call('https://' + targetlbvserver['hostname'] + adc_lbvserver_service_binding_endpoint + '/'  + targetlbvserver['name'], auth).get('lbvserver_service_binding', [])
+                        for service_binding in service_bindings:
+                            services = api_call('https://' + targetlbvserver['hostname'] + adc_service_endpoint + '/'  + service_binding['servicename'], auth).get('service', [])
+                            for service in services:
+                                servers = api_call('https://' + targetlbvserver['hostname'] + adc_server_endpoint + '/'  + service['servername'], auth).get('server', [])
+                                for server in servers:
+                                    target_servers.append(server)
+                        servicegroup_bindings = api_call('https://' + targetlbvserver['hostname'] + adc_lbvserver_servicegroup_binding_endpoint + '/'  + targetlbvserver['name'], auth).get('lbvserver_servicegroup_binding', [])
+                        for servicegroup_binding in servicegroup_bindings:
+                            servicegroup_members = api_call('https://' + targetlbvserver['hostname'] + adc_servicegroup_servicegroupmember_binding_endpoint + '/'  + servicegroup_binding['servicename'], auth).get('servicegroup_servicegroupmember_binding', [])
+                            for servicegroup_member in servicegroup_members:
+                                servers = api_call('https://' + targetlbvserver['hostname'] + adc_server_endpoint + '/'  + servicegroup_member['servername'], auth).get('server', [])
+                                for server in servers:
+                                    target_servers.append(server)
                 ret.append(target_servers)
             else:
                 raise AnsibleError(f"Input should be a string not '{type(term)}'")
