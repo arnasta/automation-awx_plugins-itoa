@@ -41,6 +41,15 @@ DOCUMENTATION = r"""
       type: str
       env:
         - name: ADM_PASSWORD
+    external_dns:
+      description:
+        - External DNS servers used to resolve hostname
+        - If the value is not specified, default value of 8.8.8.8 will be used
+      default: '8.8.8.8'
+      type: str
+      ini:
+        - section: netscaler_adc_servers_from_url
+          key: external_dns
 """
 
 EXAMPLES = r"""
