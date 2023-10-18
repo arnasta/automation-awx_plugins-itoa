@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-  name: vserver_to_servers
+  name: adc.vserver_to_servers
   author: Arnas Tamulionis arnas.tamulionis@amerisourcebergen.com
   version_added: 1.1.9
   short_description: This plugin resolves what backend server(s) are behind vserver
@@ -26,14 +26,14 @@ DOCUMENTATION = r"""
       required: true
       type: string
       ini:
-        - section: vserver_to_servers
+        - section: adc.vserver_to_servers
           key: url
     adc_hostname:
       description: Hostname of ADC
       required: true
       type: string
       ini:
-        - section: vserver_to_servers
+        - section: adc.vserver_to_servers
           key: adc_hostname
     vserver_type:
       description:
@@ -79,7 +79,7 @@ collections:
     adc_hostname: "LADC-PFE02.myabcit.net"
     vserver: "www.amerisourcebergen.com-443_cs"
     vserver_type: "cs"
-    backend_servers: "{{ lookup('cencora.itoa.vserver_to_servers', vserver, adc_hostname=adc_hostname, vserver_type=vserver_type, username=username, password=password) }}"
+    backend_servers: "{{ lookup('cencora.itoa.adc.vserver_to_servers', vserver, adc_hostname=adc_hostname, vserver_type=vserver_type, username=username, password=password) }}"
   tasks:
     - debug:
         msg: "Backend servers for {{ input_url }} are {{ backend_servers }}"
