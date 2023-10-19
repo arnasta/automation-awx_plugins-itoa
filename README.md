@@ -10,7 +10,7 @@ Ansible Collection for ITOA plugins
 
 - Arnas Tamulionis
 
-<a aria-role="button" href="https://github.com/abcorp-itops/automation-awx_plugins-itoa" rel="noopener external" target="_blank">Repository (Sources)</a>
+<a aria-role="button" href="https://github.com/arnasta/automation-awx_plugins-itoa" rel="noopener external" target="_blank">Repository (Sources)</a>
 
 ## Plugin Index
 
